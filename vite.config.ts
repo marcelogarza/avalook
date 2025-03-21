@@ -12,9 +12,18 @@ if (process.env.TEMPO === "true") {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: process.env.NODE_ENV === "development" ? "/" : process.env.VITE_BASE_PATH || "/",
+  base:
+    process.env.NODE_ENV === "development"
+      ? "/"
+      : process.env.VITE_BASE_PATH || "/",
   optimizeDeps: {
     entries: ["src/main.tsx", "src/tempobook/**/*"],
+    esbuildOptions: {
+      // This fixes the "Could not resolve ethers5" error
+      define: {
+        global: "globalThis",
+      },
+    },
   },
   plugins: [
     react({
@@ -26,10 +35,11 @@ export default defineConfig({
     preserveSymlinks: true,
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      ethers5: "ethers", // Alias ethers5 to ethers
     },
   },
   server: {
     // @ts-ignore
     allowedHosts: true,
-  }
+  },
 });
