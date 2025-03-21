@@ -7,4 +7,4 @@ run these commands
 
 npm install
 
-npm run dev -- --open
+npm run start:all
