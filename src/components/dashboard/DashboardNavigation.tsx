@@ -1,7 +1,14 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { BarChart3, Newspaper, Coins, Activity, Star } from "lucide-react";
+import {
+  BarChart3,
+  Newspaper,
+  Coins,
+  Activity,
+  Star,
+  Home,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -61,11 +68,26 @@ interface DashboardNavigationProps {
 }
 
 const DashboardNavigation = ({
-  activeSection = "overview",
   onSectionChange = () => {},
   collapsed = false,
   className = "",
 }: DashboardNavigationProps) => {
+  const location = useLocation();
+  const pathname = location.pathname;
+
+  // Determine active section from the current pathname
+  const getActiveSection = () => {
+    if (pathname === "/") return "home";
+    if (pathname.startsWith("/charts")) return "charts";
+    if (pathname.startsWith("/news")) return "news";
+    if (pathname.startsWith("/tokens")) return "tokens";
+    if (pathname.startsWith("/network")) return "network";
+    if (pathname.startsWith("/watchlist")) return "watchlist";
+    return "home";
+  };
+
+  const activeSection = getActiveSection();
+
   const handleNavClick = (section: string) => {
     onSectionChange(section);
   };
@@ -75,6 +97,13 @@ const DashboardNavigation = ({
       className={`h-full w-[250px] bg-base-100 border-r-2 border-r-base-300 flex flex-col justify-between py-6 ${className}`}
     >
       <div className="space-y-1 px-3">
+        <NavItem
+          icon={<Home size={20} />}
+          label="Home"
+          href="/"
+          active={activeSection === "home"}
+          onClick={() => handleNavClick("home")}
+        />
         <NavItem
           icon={<BarChart3 size={20} />}
           label="Charts"
