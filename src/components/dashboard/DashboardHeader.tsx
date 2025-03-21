@@ -38,7 +38,7 @@ const DashboardHeader = ({
             alt="Avalanche Logo"
             className="h-8 w-8 mr-2"
           />
-          <h1 className="text-xl font-bold">Avalanche Analytics</h1>
+          <h1 className="text-xl font-bold">AvaLook</h1>
         </div>
       </div>
 

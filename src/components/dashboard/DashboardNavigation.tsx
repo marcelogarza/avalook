@@ -75,14 +75,7 @@ const DashboardNavigation = ({
   return (
     <div className="h-full w-[250px] bg-background border-r flex flex-col justify-between py-6">
       <div className="space-y-1 px-3">
-        <div className="px-4 py-2 mb-6">
-          <img
-            src="https://cryptologos.cc/logos/avalanche-avax-logo.png"
-            alt="Avalanche Logo"
-            className="h-8 mb-2"
-          />
-          <h2 className="text-lg font-semibold">Avalanche Analytics</h2>
-        </div>
+
 
         <NavItem
           icon={<BarChart3 size={20} />}
