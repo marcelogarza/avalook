@@ -122,6 +122,19 @@ app.post("/api/chat-completion", async (req, res) => {
   }
 });
 
+// API endpoint for news
+app.get("/api/news", async (req, res) => {
+  try {
+    const response = await axios.get(
+      "https://cryptopanic.com/api/free/v1/posts/?auth_token=87b0dbc04754d3dbae6930568b86d810236a3ccf&filter=hot"
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error fetching news:", error);
+    res.status(500).json({ message: "Error fetching news" });
+  }
+});
+
 // Health check endpoint
 app.get("/api/health", (req, res) => {
   res.json({ status: "healthy" });
