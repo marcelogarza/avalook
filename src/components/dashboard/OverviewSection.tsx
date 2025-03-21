@@ -26,16 +26,20 @@ const OverviewCard = ({
   icon = <Activity className="h-4 w-4" />,
 }: OverviewCardProps) => {
   return (
-    <Card className="bg-white">
+    <Card className="bg-base-100 border border-base-300">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className="h-4 w-4 text-muted-foreground">{icon}</div>
+        <CardTitle className="text-sm font-medium text-base-content">
+          {title}
+        </CardTitle>
+        <div className="h-4 w-4 text-base-content/70">{icon}</div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold text-base-content">{value}</div>
         {change && (
           <p
-            className={`mt-1 flex items-center text-xs ${change.isPositive ? "text-green-600" : "text-red-600"}`}
+            className={`mt-1 flex items-center text-xs ${
+              change.isPositive ? "text-success" : "text-error"
+            }`}
           >
             {change.isPositive ? (
               <ArrowUp className="mr-1 h-4 w-4" />
@@ -74,8 +78,10 @@ const OverviewSection = ({
   activeValidators = "1,234",
 }: OverviewSectionProps) => {
   return (
-    <section className="w-full bg-slate-50 p-4 rounded-lg">
-      <h2 className="text-xl font-semibold mb-4">Avalanche Network Overview</h2>
+    <section className="w-full bg-base-200 p-4 rounded-lg">
+      <h2 className="text-xl font-semibold mb-4 text-base-content">
+        Avalanche Network Overview
+      </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <OverviewCard
           title="AVAX Price"

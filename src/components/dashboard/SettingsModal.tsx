@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +27,7 @@ import {
   Globe,
   Shield,
 } from "lucide-react";
+import { getCurrentTheme, setTheme } from "@/lib/theme";
 
 interface SettingsModalProps {
   open?: boolean;
@@ -35,10 +36,23 @@ interface SettingsModalProps {
 
 const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
   const [activeTab, setActiveTab] = useState("appearance");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Check if current theme is dark
+    setIsDarkMode(getCurrentTheme() === "dark");
+  }, []);
+
+  // Handle theme toggle
+  const toggleTheme = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newTheme = event.target.checked ? "dark" : "light";
+    setTheme(newTheme);
+    setIsDarkMode(newTheme === "dark");
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-background max-w-2xl">
+      <DialogContent className="bg-base-100 text-base-content max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
             Dashboard Settings
@@ -79,12 +93,20 @@ const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
             <TabsContent value="appearance" className="space-y-6">
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Theme</h3>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-center gap-4">
                   <div className="flex items-center gap-2">
                     <Sun size={18} className="text-yellow-500" />
                     <span>Light Mode</span>
                   </div>
-                  <Switch id="theme-toggle" />
+                  <Switch
+                    checked={isDarkMode}
+                    onCheckedChange={(checked) => {
+                      const newTheme = checked ? "dark" : "light";
+                      setTheme(newTheme);
+                      setIsDarkMode(newTheme === "dark");
+                    }}
+                    className="data-[state=checked]:bg-primary"
+                  />
                   <div className="flex items-center gap-2">
                     <Moon size={18} className="text-blue-500" />
                     <span>Dark Mode</span>
@@ -268,11 +290,21 @@ const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
           </Tabs>
         </div>
 
-        <DialogFooter className="mt-6">
-          <Button variant="outline" onClick={() => onOpenChange?.(false)}>
+        <DialogFooter className="mt-6 flex justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange?.(false)}
+            className="bg-base-100 border-base-300 text-base-content hover:bg-base-200"
+          >
             Cancel
           </Button>
-          <Button onClick={() => onOpenChange?.(false)}>Save Changes</Button>
+          <Button
+            variant="default"
+            onClick={() => onOpenChange?.(false)}
+            className="bg-primary text-primary-content"
+          >
+            Save Changes
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

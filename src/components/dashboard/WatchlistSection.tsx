@@ -56,7 +56,7 @@ const WatchlistSection = ({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newItemName, setNewItemName] = useState("");
   const [newItemType, setNewItemType] = useState<"Protocol" | "Token">(
-    "Protocol",
+    "Protocol"
   );
 
   const addItem = () => {
@@ -82,22 +82,24 @@ const WatchlistSection = ({
   const toggleAlert = (id: string) => {
     setItems(
       items.map((item) =>
-        item.id === id ? { ...item, alerts: !item.alerts } : item,
-      ),
+        item.id === id ? { ...item, alerts: !item.alerts } : item
+      )
     );
   };
 
   const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <Card className="w-full bg-white shadow-sm">
+    <Card className="w-full bg-base-100 shadow-sm border border-base-300">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-xl font-bold">Watchlist</CardTitle>
+        <CardTitle className="text-xl font-bold text-base-content">
+          Watchlist
+        </CardTitle>
         <div className="flex items-center space-x-2">
           <div className="relative w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-base-content/70" />
             <Input
               placeholder="Search watchlist..."
               value={searchQuery}
@@ -112,7 +114,7 @@ const WatchlistSection = ({
                 Add
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-base-100 text-base-content">
               <DialogHeader>
                 <DialogTitle>Add to Watchlist</DialogTitle>
               </DialogHeader>
@@ -165,8 +167,8 @@ const WatchlistSection = ({
       <CardContent>
         {filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <AlertTriangle className="h-12 w-12 text-muted-foreground mb-2" />
-            <p className="text-muted-foreground">
+            <AlertTriangle className="h-12 w-12 text-base-content/70 mb-2" />
+            <p className="text-base-content/70">
               Your watchlist is empty or no items match your search.
             </p>
             <Button
@@ -184,19 +186,27 @@ const WatchlistSection = ({
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="text-right">24h Change</TableHead>
-                  <TableHead className="text-center">Alerts</TableHead>
+                <TableRow className="border-base-300">
+                  <TableHead className="text-base-content">Name</TableHead>
+                  <TableHead className="text-base-content">Type</TableHead>
+                  <TableHead className="text-right text-base-content">
+                    Price
+                  </TableHead>
+                  <TableHead className="text-right text-base-content">
+                    24h Change
+                  </TableHead>
+                  <TableHead className="text-center text-base-content">
+                    Alerts
+                  </TableHead>
                   <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredItems.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableRow key={item.id} className="border-base-300">
+                    <TableCell className="font-medium text-base-content">
+                      {item.name}
+                    </TableCell>
                     <TableCell>
                       <Badge
                         variant={
@@ -206,19 +216,21 @@ const WatchlistSection = ({
                         {item.type}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right text-base-content">
                       {item.price ? `$${item.price.toFixed(2)}` : "--"}
                     </TableCell>
                     <TableCell className="text-right">
                       <span
                         className={
                           item.change24h && item.change24h > 0
-                            ? "text-green-600"
-                            : "text-red-600"
+                            ? "text-success"
+                            : "text-error"
                         }
                       >
                         {item.change24h
-                          ? `${item.change24h > 0 ? "+" : ""}${item.change24h.toFixed(2)}%`
+                          ? `${
+                              item.change24h > 0 ? "+" : ""
+                            }${item.change24h.toFixed(2)}%`
                           : "--"}
                       </span>
                     </TableCell>
@@ -237,7 +249,7 @@ const WatchlistSection = ({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                          className="h-8 w-8 text-error hover:bg-error/10"
                           onClick={() => removeItem(item.id)}
                         >
                           <X className="h-4 w-4" />

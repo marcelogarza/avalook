@@ -28,16 +28,18 @@ interface NewsFeedSectionProps {
 
 const NewsFeedSection = ({ news = defaultNews }: NewsFeedSectionProps) => {
   return (
-    <Card className="w-full h-full bg-white shadow-sm">
+    <Card className="w-full h-full bg-base-100 shadow-sm border border-base-300">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-xl font-bold">Avalanche News</CardTitle>
+          <CardTitle className="text-xl font-bold text-base-content">
+            Avalanche News
+          </CardTitle>
           <div className="relative w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-base-content/70" />
             <Input placeholder="Search news..." className="pl-8" />
           </div>
         </div>
-        <CardDescription>
+        <CardDescription className="text-base-content/70">
           Latest updates from the Avalanche ecosystem
         </CardDescription>
       </CardHeader>
@@ -115,17 +117,17 @@ interface NewsCardProps {
 
 const NewsCard = ({ item }: NewsCardProps) => {
   return (
-    <div className="p-4 border rounded-lg hover:bg-slate-50 transition-colors">
+    <div className="p-4 border border-base-300 rounded-lg hover:bg-base-200 transition-colors">
       <div className="flex justify-between items-start mb-2">
-        <h3 className="font-medium text-sm">{item.title}</h3>
+        <h3 className="font-medium text-sm text-base-content">{item.title}</h3>
         <Badge variant="outline" className="text-xs">
           {item.category}
         </Badge>
       </div>
-      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+      <p className="text-sm text-base-content/70 mb-3 line-clamp-2">
         {item.summary}
       </p>
-      <div className="flex justify-between items-center text-xs text-muted-foreground">
+      <div className="flex justify-between items-center text-xs text-base-content/70">
         <div className="flex items-center gap-2">
           <span>{item.source}</span>
           <span>•</span>

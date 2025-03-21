@@ -66,9 +66,11 @@ const TokenPriceSection = ({
   title = "Token Prices",
 }: TokenPriceSectionProps) => {
   return (
-    <Card className="w-full h-full bg-white">
+    <Card className="w-full h-full bg-base-100 border border-base-300">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-xl font-bold">{title}</CardTitle>
+        <CardTitle className="text-xl font-bold text-base-content">
+          {title}
+        </CardTitle>
         <Tabs defaultValue="all">
           <TabsList>
             <TabsTrigger value="all">All</TabsTrigger>
@@ -83,15 +85,17 @@ const TokenPriceSection = ({
           {tokens.map((token, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+              className="flex items-center justify-between p-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-content font-bold">
                   {token.symbol.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="font-medium">{token.name}</h3>
-                  <p className="text-sm text-gray-500">{token.symbol}</p>
+                  <h3 className="font-medium text-base-content">
+                    {token.name}
+                  </h3>
+                  <p className="text-sm text-base-content/60">{token.symbol}</p>
                 </div>
               </div>
 
@@ -100,11 +104,15 @@ const TokenPriceSection = ({
                   {/* Simple sparkline chart */}
                   <div className="flex items-end h-8 space-x-1">
                     {token.chart.map((value, i) => {
-                      const height = `${(value / Math.max(...token.chart)) * 100}%`;
+                      const height = `${
+                        (value / Math.max(...token.chart)) * 100
+                      }%`;
                       return (
                         <div
                           key={i}
-                          className={`w-1 ${token.change24h >= 0 ? "bg-green-400" : "bg-red-400"} rounded-t-sm`}
+                          className={`w-1 ${
+                            token.change24h >= 0 ? "bg-success" : "bg-error"
+                          } rounded-t-sm`}
                           style={{ height }}
                         />
                       );
@@ -114,11 +122,13 @@ const TokenPriceSection = ({
               </div>
 
               <div className="text-right">
-                <div className="font-medium">
+                <div className="font-medium text-base-content">
                   ${token.price.toFixed(token.price < 1 ? 4 : 2)}
                 </div>
                 <div
-                  className={`text-sm flex items-center justify-end ${token.change24h >= 0 ? "text-green-500" : "text-red-500"}`}
+                  className={`text-sm flex items-center justify-end ${
+                    token.change24h >= 0 ? "text-success" : "text-error"
+                  }`}
                 >
                   {token.change24h >= 0 ? (
                     <ArrowUp className="w-3 h-3 mr-1" />
@@ -132,8 +142,8 @@ const TokenPriceSection = ({
           ))}
         </div>
 
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <button className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium">
+        <div className="mt-4 pt-4 border-t border-base-300">
+          <button className="w-full text-center text-sm text-primary hover:text-primary-focus font-medium">
             View All Tokens
           </button>
         </div>

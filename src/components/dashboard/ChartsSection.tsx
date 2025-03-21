@@ -68,9 +68,11 @@ const ChartsSection = ({ className = "" }: ChartsSectionProps) => {
   ];
 
   return (
-    <Card className={`w-full bg-white ${className}`}>
+    <Card className={`w-full bg-base-100 ${className} border border-base-300`}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-xl font-bold">Analytics Charts</CardTitle>
+        <CardTitle className="text-xl font-bold text-base-content">
+          Analytics Charts
+        </CardTitle>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Time Range" />
@@ -84,7 +86,7 @@ const ChartsSection = ({ className = "" }: ChartsSectionProps) => {
           </SelectContent>
         </Select>
       </CardHeader>
-      <CardContent>
+      <CardContent className="text-base-content">
         <Tabs defaultValue="transactions" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="transactions">Transaction Volume</TabsTrigger>
@@ -99,9 +101,15 @@ const ChartsSection = ({ className = "" }: ChartsSectionProps) => {
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
+                <XAxis dataKey="date" stroke="currentColor" />
+                <YAxis stroke="currentColor" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--b1, oklch(var(--b1)/1))",
+                    color: "var(--bc, oklch(var(--bc)/1))",
+                    border: "1px solid var(--b3, oklch(var(--b3)/1))",
+                  }}
+                />
                 <Legend />
                 <Line
                   type="monotone"
@@ -122,9 +130,15 @@ const ChartsSection = ({ className = "" }: ChartsSectionProps) => {
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
+                <XAxis dataKey="date" stroke="currentColor" />
+                <YAxis stroke="currentColor" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--b1, oklch(var(--b1)/1))",
+                    color: "var(--bc, oklch(var(--bc)/1))",
+                    border: "1px solid var(--b3, oklch(var(--b3)/1))",
+                  }}
+                />
                 <Legend />
                 <Line
                   type="monotone"
@@ -153,9 +167,15 @@ const ChartsSection = ({ className = "" }: ChartsSectionProps) => {
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
+                <XAxis dataKey="date" stroke="currentColor" />
+                <YAxis stroke="currentColor" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--b1, oklch(var(--b1)/1))",
+                    color: "var(--bc, oklch(var(--bc)/1))",
+                    border: "1px solid var(--b3, oklch(var(--b3)/1))",
+                  }}
+                />
                 <Legend />
                 <Line
                   type="monotone"

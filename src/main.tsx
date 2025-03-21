@@ -3,9 +3,13 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
+import { initTheme } from "@/lib/theme";
 
 import { TempoDevtools } from "tempo-devtools";
 TempoDevtools.init();
+
+// Initialize theme based on user preference or system setting
+initTheme();
 
 const basename = import.meta.env.BASE_URL;
 
@@ -14,5 +18,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <BrowserRouter basename={basename}>
       <App />
     </BrowserRouter>
-  </React.StrictMode>,
+  </React.StrictMode>
 );
