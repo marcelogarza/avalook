@@ -7,32 +7,11 @@ import {
   TrendingUp,
   DollarSign,
   BarChart2,
+  RefreshCw,
 } from "lucide-react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-
-interface TokenData {
-  name: string;
-  symbol: string;
-  price: number;
-  change24h: number;
-  marketCap: string;
-  volume24h: string;
-  chart: number[];
-}
-
-interface TokenPriceHistory {
-  timestamp: string;
-  price: number;
-}
-
-interface NetworkMetrics {
-  tps: number;
-  validators: number;
-  totalTransactions: number;
-  avgBlockTime: number;
-  [key: string]: any;
-}
+import { TokenData, NetworkMetrics, TokenPriceHistory } from "../../types";
 
 interface TokenPriceSectionProps {
   title?: string;
@@ -133,14 +112,16 @@ const TokenPriceSection = ({
       setIsLoading(true);
       setError(null);
 
-      // Get token prices
+      // Get token prices with a longer timeout for real API data
       const tokenResponse = await axios.get(
         "http://localhost:5001/api/token-prices",
-        { timeout: 12000 }
+        { timeout: 20000 }
       );
 
       // Fetch network metrics separately - won't block token display
-      fetchNetworkMetrics();
+      fetchNetworkMetrics().catch((err) =>
+        console.error("Network metrics fetch failed:", err)
+      );
 
       if (tokenResponse.data) {
         // Check if we have the minimum required data
@@ -150,13 +131,17 @@ const TokenPriceSection = ({
         );
 
         if (isMissingTokens) {
-          console.warn("Missing required token data:", tokenResponse.data);
+          console.warn("Some token data is missing:", tokenResponse.data);
         }
 
         // Fetch historical data for each token
         const historyPromises = tokenIds.map((tokenId) =>
-          fetchTokenHistory(tokenId)
+          fetchTokenHistory(tokenId).catch((err) => {
+            console.error(`Error fetching history for ${tokenId}:`, err);
+            return false;
+          })
         );
+
         await Promise.allSettled(historyPromises);
 
         const tokenData: TokenData[] = [
@@ -178,75 +163,60 @@ const TokenPriceSection = ({
               24,
               20,
               25,
-              tokenResponse.data["avalanche-2"]?.usd || 0,
+              tokenResponse.data["avalanche-2"]?.usd || 27.5,
             ],
           },
           {
             name: "Trader Joe",
             symbol: "JOE",
-            price: tokenResponse.data["joe"]?.usd || 0.65,
-            change24h: tokenResponse.data["joe"]?.usd_24h_change || -1.8,
+            price: tokenResponse.data.joe?.usd || 0,
+            change24h: tokenResponse.data.joe?.usd_24h_change || 0,
             marketCap: `$${(
-              (tokenResponse.data["joe"]?.usd_market_cap || 0) / 1e6
+              (tokenResponse.data.joe?.usd_market_cap || 0) / 1e6
             ).toFixed(0)}M`,
             volume24h: `$${(
-              (tokenResponse.data["joe"]?.usd_24h_vol || 0) / 1e6
-            ).toFixed(0)}M`,
-            chart: tokenHistories["joe"] || [
-              0.68,
-              0.72,
-              0.69,
-              0.67,
-              0.64,
-              0.63,
-              tokenResponse.data["joe"]?.usd || 0.65,
+              (tokenResponse.data.joe?.usd_24h_vol || 0) / 1e6
+            ).toFixed(1)}M`,
+            chart: tokenHistories.joe || [
+              0.5, 0.48, 0.52, 0.51, 0.53, 0.55, 0.54,
             ],
           },
           {
             name: "Pangolin",
             symbol: "PNG",
-            price: tokenResponse.data["pangolin"]?.usd || 0.12,
-            change24h: tokenResponse.data["pangolin"]?.usd_24h_change || 5.4,
+            price: tokenResponse.data.pangolin?.usd || 0,
+            change24h: tokenResponse.data.pangolin?.usd_24h_change || 0,
             marketCap: `$${(
-              (tokenResponse.data["pangolin"]?.usd_market_cap || 0) / 1e6
+              (tokenResponse.data.pangolin?.usd_market_cap || 0) / 1e6
             ).toFixed(0)}M`,
             volume24h: `$${(
-              (tokenResponse.data["pangolin"]?.usd_24h_vol || 0) / 1e6
-            ).toFixed(0)}M`,
-            chart: tokenHistories["pangolin"] || [
-              0.1,
-              0.09,
-              0.11,
-              0.13,
-              0.12,
-              0.11,
-              tokenResponse.data["pangolin"]?.usd || 0.12,
+              (tokenResponse.data.pangolin?.usd_24h_vol || 0) / 1e6
+            ).toFixed(1)}M`,
+            chart: tokenHistories.pangolin || [
+              0.1, 0.09, 0.11, 0.105, 0.12, 0.115, 0.11,
             ],
           },
           {
-            name: "Benqi",
+            name: "BENQI",
             symbol: "QI",
-            price: tokenResponse.data["benqi"]?.usd || 0.023,
-            change24h: tokenResponse.data["benqi"]?.usd_24h_change || 1.2,
+            price: tokenResponse.data.benqi?.usd || 0,
+            change24h: tokenResponse.data.benqi?.usd_24h_change || 0,
             marketCap: `$${(
-              (tokenResponse.data["benqi"]?.usd_market_cap || 0) / 1e6
+              (tokenResponse.data.benqi?.usd_market_cap || 0) / 1e6
             ).toFixed(0)}M`,
             volume24h: `$${(
-              (tokenResponse.data["benqi"]?.usd_24h_vol || 0) / 1e6
-            ).toFixed(0)}M`,
-            chart: tokenHistories["benqi"] || [
-              0.021,
-              0.022,
-              0.024,
-              0.023,
-              0.022,
-              0.023,
-              tokenResponse.data["benqi"]?.usd || 0.023,
+              (tokenResponse.data.benqi?.usd_24h_vol || 0) / 1e6
+            ).toFixed(1)}M`,
+            chart: tokenHistories.benqi || [
+              0.02, 0.019, 0.022, 0.021, 0.023, 0.022, 0.021,
             ],
           },
         ];
 
-        setTokens(tokenData);
+        // Filter out tokens with no price data
+        const filteredTokens = tokenData.filter((token) => token.price > 0);
+
+        setTokens(filteredTokens.length > 0 ? filteredTokens : tokenData);
         setLastUpdated(new Date());
         setRetryCount(0); // Reset retry count on success
       } else {
@@ -259,7 +229,7 @@ const TokenPriceSection = ({
       if (axios.isAxiosError(error)) {
         if (error.code === "ECONNABORTED") {
           setError(
-            "Request timed out. The server might be busy. Please try again later."
+            "Request timed out. The server might be busy. API calls to external services may take longer than expected."
           );
         } else if (error.response?.status === 429) {
           setError(
@@ -267,7 +237,7 @@ const TokenPriceSection = ({
           );
         } else if (error.response) {
           setError(
-            `Server error (${error.response.status}). The backend service might be unavailable.`
+            `Server error (${error.response.status}). The backend service might be unavailable or external APIs may be down.`
           );
         } else {
           setError(
@@ -280,7 +250,7 @@ const TokenPriceSection = ({
 
       // Only retry a limited number of times with increasing delay
       if (retryCount < 3) {
-        const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+        const retryDelay = Math.pow(2, retryCount) * 2000; // Longer exponential backoff for real APIs
         console.log(`Retrying in ${retryDelay}ms (attempt ${retryCount + 1})`);
 
         setRetryCount((prev) => prev + 1);
@@ -383,29 +353,26 @@ const TokenPriceSection = ({
                 </div>
               </div>
 
-                <div className="flex-1 mx-4 hidden md:block">
-                  <div className="h-10 flex items-center">
-                    {/* Simple sparkline chart */}
-                    <div className="flex items-end h-8 space-x-1">
-                      {token.chart.map((value, i) => {
-                        const max = Math.max(
-                          ...token.chart.filter((v) => v > 0)
-                        );
-                        const height =
-                          max > 0 ? `${(value / max) * 100}%` : "0%";
-                        return (
-                          <div
-                            key={i}
-                            className={`w-1 ${
-                              token.change24h >= 0 ? "bg-success" : "bg-error"
-                            } rounded-t-sm`}
-                            style={{ height }}
-                          />
-                        );
-                      })}
-                    </div>
+              <div className="flex-1 mx-4 hidden md:block">
+                <div className="h-10 flex items-center">
+                  {/* Simple sparkline chart */}
+                  <div className="flex items-end h-8 space-x-1">
+                    {token.chart.map((value, i) => {
+                      const max = Math.max(...token.chart.filter((v) => v > 0));
+                      const height = max > 0 ? `${(value / max) * 100}%` : "0%";
+                      return (
+                        <div
+                          key={i}
+                          className={`w-1 ${
+                            token.change24h >= 0 ? "bg-success" : "bg-error"
+                          } rounded-t-sm`}
+                          style={{ height }}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
+              </div>
 
               <div className="text-right">
                 <div className="font-medium text-base-content">
