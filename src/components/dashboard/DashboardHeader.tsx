@@ -133,12 +133,21 @@ const DashboardHeader = ({
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={onSettingsClick}
+              className="hover:bg-base-200 focus:bg-base-200"
+            >
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Log out</DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-base-300" />
+            <DropdownMenuItem
+              onClick={handleManageWallet}
+              className="hover:bg-base-200 focus:bg-base-200"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Manage Wallet</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

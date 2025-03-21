@@ -22,12 +22,12 @@ const HeroPre = () => {
         <TypewriterEffect
           words={[
             {
-              text: "Avalook",
+              text: "AvaLook",
+              className: "text-primary",
             },
           ]}
         />
       </motion.div>
-
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
