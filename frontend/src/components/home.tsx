@@ -14,7 +14,7 @@ import TokenPriceSection from "./dashboard/TokenPriceSection";
 import WatchlistSection from "./dashboard/WatchlistSection";
 import SettingsModal from "./dashboard/SettingsModal";
 import HeroPre from "./HeroPre";
-import { getCurrentTheme } from "@/lib/theme";
+import { getCurrentTheme } from "../lib/theme";
 
 const Home = () => {
   const [activeSection, setActiveSection] = useState("overview");
