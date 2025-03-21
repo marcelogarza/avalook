@@ -7,7 +7,6 @@ import {
   Coins,
   Activity,
   Star,
-  Settings,
   HelpCircle,
   LogOut,
 } from "lucide-react";
@@ -118,13 +117,6 @@ const DashboardNavigation = ({
       </div>
 
       <div className="space-y-1 px-3 mt-auto">
-        <NavItem
-          icon={<Settings size={20} />}
-          label="Settings"
-          href="/settings"
-          active={activeSection === "settings"}
-          onClick={() => handleNavClick("settings")}
-        />
         <NavItem
           icon={<HelpCircle size={20} />}
           label="Help"
