@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import {
-  ArrowDown,
-  ArrowUp,
-  TrendingUp,
-  DollarSign,
-  BarChart2,
-  RefreshCw,
-} from "lucide-react";
+import { TrendingUp, DollarSign, BarChart2, RefreshCw } from "lucide-react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { TokenData, NetworkMetrics, TokenPriceHistory } from "../../types";
@@ -390,15 +383,10 @@ const TokenPriceSection = ({
                       : `$${token.price.toFixed(token.price < 1 ? 4 : 2)}`}
                   </div>
                   <div
-                    className={`text-sm flex items-center justify-end ${
+                    className={`text-sm ${
                       token.change24h >= 0 ? "text-success" : "text-error"
                     }`}
                   >
-                    {token.change24h >= 0 ? (
-                      <ArrowUp className="w-3 h-3 mr-1" />
-                    ) : (
-                      <ArrowDown className="w-3 h-3 mr-1" />
-                    )}
                     {Math.abs(token.change24h).toFixed(2)}%
                   </div>
                 </div>

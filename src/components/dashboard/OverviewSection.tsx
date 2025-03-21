@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
-  ArrowDown,
-  ArrowUp,
   Activity,
   Database,
   Users,
@@ -56,15 +54,10 @@ const OverviewCard = ({
         )}
         {change && (
           <p
-            className={`mt-1 flex items-center text-xs ${
+            className={`mt-1 text-xs ${
               change.isPositive ? "text-success" : "text-error"
             }`}
           >
-            {change.isPositive ? (
-              <ArrowUp className="mr-1 h-3 w-3" />
-            ) : (
-              <ArrowDown className="mr-1 h-3 w-3" />
-            )}
             {change.value}
           </p>
         )}
