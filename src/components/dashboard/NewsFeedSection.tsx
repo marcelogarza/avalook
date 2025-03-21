@@ -32,8 +32,8 @@ const NewsFeedSection = ({ news = defaultNews }: NewsFeedSectionProps) => {
 
   return (
     <Card
-      className="w-full h-full bg-base-100 shadow-sm border border-base-300 flex flex-col"
-      style={{ minHeight: "500px" }}
+      className="w-full bg-base-100 shadow-sm border border-base-300 flex flex-col"
+      style={{ height: "500px" }}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-xl font-bold text-base-content">
@@ -49,8 +49,8 @@ const NewsFeedSection = ({ news = defaultNews }: NewsFeedSectionProps) => {
           </TabsList>
         </Tabs>
       </CardHeader>
-      <CardContent className="flex-grow flex flex-col">
-        <div className="space-y-4 h-[400px] overflow-y-auto">
+      <CardContent className="flex flex-col justify-between flex-1 pb-0">
+        <div className="space-y-4 overflow-y-auto" style={{ height: "365px" }}>
           {filteredNews.length > 0 ? (
             filteredNews.map((item) => <NewsCard key={item.id} item={item} />)
           ) : (
@@ -61,7 +61,7 @@ const NewsFeedSection = ({ news = defaultNews }: NewsFeedSectionProps) => {
           )}
         </div>
 
-        <div className="border-t border-base-300 mt-4">
+        <div className="border-t border-base-300 mt-2 bg-base-100">
           <Link to="/news" className="block w-full">
             <button className="w-full h-10 py-2 text-center text-sm text-primary hover:text-primary-focus font-medium">
               View All News

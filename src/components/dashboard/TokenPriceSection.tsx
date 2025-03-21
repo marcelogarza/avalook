@@ -302,8 +302,8 @@ const TokenPriceSection = ({
 
   return (
     <Card
-      className="w-full h-full bg-base-100 border border-base-300 flex flex-col"
-      style={{ minHeight: "500px" }}
+      className="w-full bg-base-100 border border-base-300 flex flex-col"
+      style={{ height: "500px" }}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-xl font-bold text-base-content">
@@ -334,117 +334,129 @@ const TokenPriceSection = ({
           </Tabs>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4 max-h-[280px] overflow-y-auto pr-2">
-          {tokens.map((token, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-content font-bold">
-                  {token.symbol.charAt(0)}
+      <CardContent className="flex flex-col justify-between flex-1 pb-0">
+        <div>
+          <div
+            className="space-y-4 overflow-y-auto pr-2"
+            style={{ height: "265px" }}
+          >
+            {tokens.map((token, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-content font-bold">
+                    {token.symbol.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-base-content">
+                      {token.name}
+                    </h3>
+                    <p className="text-sm text-base-content/60">
+                      {token.symbol}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-medium text-base-content">
-                    {token.name}
-                  </h3>
-                  <p className="text-sm text-base-content/60">{token.symbol}</p>
-                </div>
-              </div>
 
-              <div className="flex-1 mx-4 hidden md:block">
-                <div className="h-10 flex items-center">
-                  {/* Simple sparkline chart */}
-                  <div className="flex items-end h-8 space-x-1">
-                    {token.chart.map((value, i) => {
-                      const max = Math.max(...token.chart.filter((v) => v > 0));
-                      const height = max > 0 ? `${(value / max) * 100}%` : "0%";
-                      return (
-                        <div
-                          key={i}
-                          className={`w-1 ${
-                            token.change24h >= 0 ? "bg-success" : "bg-error"
-                          } rounded-t-sm`}
-                          style={{ height }}
-                        />
-                      );
-                    })}
+                <div className="flex-1 mx-4 hidden md:block">
+                  <div className="h-10 flex items-center">
+                    {/* Simple sparkline chart */}
+                    <div className="flex items-end h-8 space-x-1">
+                      {token.chart.map((value, i) => {
+                        const max = Math.max(
+                          ...token.chart.filter((v) => v > 0)
+                        );
+                        const height =
+                          max > 0 ? `${(value / max) * 100}%` : "0%";
+                        return (
+                          <div
+                            key={i}
+                            className={`w-1 ${
+                              token.change24h >= 0 ? "bg-success" : "bg-error"
+                            } rounded-t-sm`}
+                            style={{ height }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className="font-medium text-base-content">
+                    {isLoading
+                      ? "Loading..."
+                      : `$${token.price.toFixed(token.price < 1 ? 4 : 2)}`}
+                  </div>
+                  <div
+                    className={`text-sm flex items-center justify-end ${
+                      token.change24h >= 0 ? "text-success" : "text-error"
+                    }`}
+                  >
+                    {token.change24h >= 0 ? (
+                      <ArrowUp className="w-3 h-3 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-3 h-3 mr-1" />
+                    )}
+                    {Math.abs(token.change24h).toFixed(2)}%
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
 
-              <div className="text-right">
-                <div className="font-medium text-base-content">
-                  {isLoading
-                    ? "Loading..."
-                    : `$${token.price.toFixed(token.price < 1 ? 4 : 2)}`}
-                </div>
-                <div
-                  className={`text-sm flex items-center justify-end ${
-                    token.change24h >= 0 ? "text-success" : "text-error"
-                  }`}
-                >
-                  {token.change24h >= 0 ? (
-                    <ArrowUp className="w-3 h-3 mr-1" />
-                  ) : (
-                    <ArrowDown className="w-3 h-3 mr-1" />
-                  )}
-                  {Math.abs(token.change24h).toFixed(2)}%
-                </div>
+          {/* Network Metrics Section - slightly reduced margins */}
+          {networkMetrics && (
+            <div className="mt-3 pt-3 border-t border-base-300">
+              <h3 className="text-md font-medium mb-2">
+                Avalanche Network Metrics
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {networkMetrics.tps !== undefined && (
+                  <div className="bg-base-200 p-2 rounded-md">
+                    <p className="text-xs text-base-content/60">Current TPS</p>
+                    <p className="text-lg font-semibold">
+                      {networkMetrics.tps.toFixed(2)}
+                    </p>
+                  </div>
+                )}
+                {networkMetrics.validators !== undefined && (
+                  <div className="bg-base-200 p-2 rounded-md">
+                    <p className="text-xs text-base-content/60">Validators</p>
+                    <p className="text-lg font-semibold">
+                      {networkMetrics.validators}
+                    </p>
+                  </div>
+                )}
+                {networkMetrics.totalTransactions !== undefined && (
+                  <div className="bg-base-200 p-2 rounded-md">
+                    <p className="text-xs text-base-content/60">
+                      Total Transactions
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {networkMetrics.totalTransactions.toLocaleString()}
+                    </p>
+                  </div>
+                )}
+                {networkMetrics.avgBlockTime !== undefined && (
+                  <div className="bg-base-200 p-2 rounded-md">
+                    <p className="text-xs text-base-content/60">
+                      Avg Block Time
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {networkMetrics.avgBlockTime.toFixed(2)}s
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-          ))}
+          )}
         </div>
 
-        {/* Network Metrics Section */}
-        {networkMetrics && (
-          <div className="mt-4 pt-4 border-t border-base-300">
-            <h3 className="text-md font-medium mb-2">
-              Avalanche Network Metrics
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {networkMetrics.tps !== undefined && (
-                <div className="bg-base-200 p-2 rounded-md">
-                  <p className="text-xs text-base-content/60">Current TPS</p>
-                  <p className="text-lg font-semibold">
-                    {networkMetrics.tps.toFixed(2)}
-                  </p>
-                </div>
-              )}
-              {networkMetrics.validators !== undefined && (
-                <div className="bg-base-200 p-2 rounded-md">
-                  <p className="text-xs text-base-content/60">Validators</p>
-                  <p className="text-lg font-semibold">
-                    {networkMetrics.validators}
-                  </p>
-                </div>
-              )}
-              {networkMetrics.totalTransactions !== undefined && (
-                <div className="bg-base-200 p-2 rounded-md">
-                  <p className="text-xs text-base-content/60">
-                    Total Transactions
-                  </p>
-                  <p className="text-lg font-semibold">
-                    {networkMetrics.totalTransactions.toLocaleString()}
-                  </p>
-                </div>
-              )}
-              {networkMetrics.avgBlockTime !== undefined && (
-                <div className="bg-base-200 p-2 rounded-md">
-                  <p className="text-xs text-base-content/60">Avg Block Time</p>
-                  <p className="text-lg font-semibold">
-                    {networkMetrics.avgBlockTime.toFixed(2)}s
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div className="border-t border-base-300 mt-4">
+        <div className="border-t border-base-300 mt-2 bg-base-100">
           <Link to="/tokens" className="block w-full">
-            <button className="w-full text-center text-sm text-primary hover:text-primary-focus font-medium">
+            <button className="w-full h-10 py-2 text-center text-sm text-primary hover:text-primary-focus font-medium">
               View All Tokens
             </button>
           </Link>
