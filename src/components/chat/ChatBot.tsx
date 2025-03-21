@@ -90,7 +90,7 @@ const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
       {/* Chat toggle button */}
       <button
         onClick={toggleChat}
-        className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+        className="flex items-center justify-center w-14 h-14 rounded-full bg-[#E84142] text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
         aria-label={isOpen ? "Close chat" : "Open chat"}
       >
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
@@ -98,9 +98,9 @@ const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
 
       {/* Chat window */}
       {isOpen && (
-        <div className="absolute bottom-16 right-0 w-80 sm:w-96 h-96 bg-base-100 rounded-lg shadow-xl border border-base-300 flex flex-col overflow-hidden">
+        <div className="absolute bottom-16 right-0 w-80 sm:w-96 h-96 bg-[#1a1b26] rounded-lg shadow-xl border border-gray-800 flex flex-col overflow-hidden">
           {/* Chat header */}
-          <div className="px-4 py-3 bg-gradient-to-r from-primary to-secondary text-white flex justify-between items-center">
+          <div className="px-4 py-3 bg-[#E84142] text-white flex justify-between items-center">
             <h3 className="font-medium">{title}</h3>
             <button
               onClick={toggleChat}
@@ -112,7 +112,7 @@ const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
           </div>
 
           {/* Chat messages */}
-          <div className="flex-1 p-4 overflow-y-auto bg-base-200/50">
+          <div className="flex-1 p-4 overflow-y-auto bg-[#1e1f2e]">
             {messages.map((msg, index) => (
               <ChatMessage
                 key={index}
@@ -137,7 +137,7 @@ const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
           {/* Chat input */}
           <form
             onSubmit={handleSubmit}
-            className="p-3 border-t border-base-300 bg-base-100 flex"
+            className="p-3 border-t border-gray-800 bg-[#1a1b26] flex"
           >
             <input
               ref={inputRef}
@@ -145,12 +145,12 @@ const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Type your message..."
-              className="flex-1 py-2 px-3 bg-base-200 rounded-l-md focus:outline-none focus:ring-1 focus:ring-primary"
+              className="flex-1 py-2 px-3 bg-[#2a2b36] text-white rounded-l-md focus:outline-none focus:ring-1 focus:ring-[#E84142]"
               disabled={isLoading}
             />
             <button
               type="submit"
-              className="px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-r-md hover:opacity-90 disabled:opacity-50"
+              className="px-4 py-2 bg-[#E84142] text-white rounded-r-md hover:opacity-90 disabled:opacity-50"
               disabled={!message.trim() || isLoading}
             >
               <Send size={18} />

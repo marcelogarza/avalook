@@ -16,9 +16,7 @@ const ChatMessage = ({ message, isUser }: ChatMessageProps) => {
       {/* Avatar */}
       <div
         className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-          isUser
-            ? "bg-secondary text-secondary-content"
-            : "bg-primary text-primary-content"
+          isUser ? "bg-gray-600 text-white" : "bg-[#E84142] text-white"
         }`}
       >
         {isUser ? <User size={16} /> : <Bot size={16} />}
@@ -28,8 +26,8 @@ const ChatMessage = ({ message, isUser }: ChatMessageProps) => {
       <div
         className={`max-w-[80%] px-3 py-2 rounded-lg ${
           isUser
-            ? "bg-secondary/10 text-base-content rounded-tr-none"
-            : "bg-primary/10 text-base-content rounded-tl-none"
+            ? "bg-gray-700 text-white rounded-tr-none"
+            : "bg-[#E84142]/10 text-gray-200 rounded-tl-none border border-[#E84142]/20"
         }`}
       >
         <p className="text-sm whitespace-pre-wrap">{message}</p>
