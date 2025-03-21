@@ -7,6 +7,7 @@ import {
   Database,
   Users,
   Clock,
+  RefreshCw,
 } from "lucide-react";
 import axios from "axios";
 
@@ -18,7 +19,7 @@ interface OverviewCardProps {
     isPositive: boolean;
   };
   icon: React.ReactNode;
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
 const OverviewCard = ({
@@ -59,99 +60,140 @@ const OverviewCard = ({
   );
 };
 
-interface OverviewSectionProps {
-  marketCap?: string;
-  marketCapChange?: {
-    value: string;
+interface NetworkData {
+  price: {
+    value: number;
+    formatted: string;
+    change: string;
     isPositive: boolean;
   };
-  tps?: string;
-  activeValidators?: string;
+  marketCap: {
+    value: number;
+    formatted: string;
+    change: string;
+    isPositive: boolean;
+  };
+  tps: {
+    value: number;
+    formatted: string;
+  };
+  activeValidators: {
+    value: number;
+    formatted: string;
+  };
 }
 
-const OverviewSection = ({
-  marketCap = "$8.2B",
-  marketCapChange = { value: "1.8% (24h)", isPositive: true },
-  tps = "4,521",
-  activeValidators = "1,234",
-}: OverviewSectionProps) => {
-  const [avaxPrice, setAvaxPrice] = useState<string | null>(null);
-  const [avaxChange, setAvaxChange] = useState<{
-    value: string;
-    isPositive: boolean;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [priceHistory, setPriceHistory] = useState<number[]>([]);
+interface OverviewSectionProps {}
 
-  const fetchAvaxPrice = async () => {
+const OverviewSection = ({}: OverviewSectionProps) => {
+  const [networkData, setNetworkData] = useState<NetworkData | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchNetworkData = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:5001/api/avax-price");
-      const avaxPriceData = response.data["avalanche-2"].usd;
+      setError(null);
 
-      // Format the price as currency
-      const formattedPrice = `$${avaxPriceData.toFixed(2)}`;
-      setAvaxPrice(formattedPrice);
+      const response = await axios.get(
+        "http://localhost:5001/api/avalanche/overview"
+      );
 
-      // Update price history
-      setPriceHistory((prev) => [...prev, avaxPriceData].slice(-10));
-
-      // Calculate change if we have at least 2 prices
-      if (priceHistory.length > 0) {
-        const previousPrice = priceHistory[priceHistory.length - 1];
-        const changePercent =
-          ((avaxPriceData - previousPrice) / previousPrice) * 100;
-        setAvaxChange({
-          value: `${Math.abs(changePercent).toFixed(2)}% (24h)`,
-          isPositive: changePercent >= 0,
-        });
-      }
+      setNetworkData(response.data);
+      setLastUpdated(new Date());
     } catch (error) {
-      console.error("Error fetching AVAX price:", error);
+      console.error("Error fetching network data:", error);
+      setError("Failed to fetch network data");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleRefresh = () => {
+    fetchNetworkData();
+  };
+
   useEffect(() => {
-    // Fetch data immediately on component mount
-    fetchAvaxPrice();
+    // Fetch data on component mount
+    fetchNetworkData();
 
-    // Set up a timer to fetch data every minute
-    const intervalId = setInterval(fetchAvaxPrice, 60000);
+    // Set up auto-refresh every 2 minutes
+    const intervalId = setInterval(fetchNetworkData, 120000);
 
-    // Clean up interval on component unmount
     return () => clearInterval(intervalId);
   }, []);
 
   return (
     <section className="w-full bg-base-200 p-4 rounded-lg">
-      <h2 className="text-xl font-semibold mb-4 text-base-content">
-        Avalanche Network Overview
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold text-base-content">
+          Avalanche Network Overview
+        </h2>
+        <div className="flex items-center space-x-3">
+          {lastUpdated && (
+            <p className="text-xs text-base-content/60">
+              Last updated: {lastUpdated.toLocaleTimeString()}
+            </p>
+          )}
+          <button
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="text-base-content/70 hover:text-primary disabled:opacity-50"
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-error/10 text-error p-3 rounded-md mb-4">
+          {error}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <OverviewCard
           title="AVAX Price"
-          value={avaxPrice || ""}
-          change={avaxChange || undefined}
+          value={networkData?.price.formatted || ""}
+          change={
+            networkData
+              ? {
+                  value: `${networkData.price.change}% (24h)`,
+                  isPositive: networkData.price.isPositive,
+                }
+              : undefined
+          }
           icon={<Activity className="h-4 w-4" />}
           isLoading={isLoading}
         />
         <OverviewCard
           title="Market Cap"
-          value={marketCap}
-          change={marketCapChange}
+          value={networkData?.marketCap.formatted || ""}
+          change={
+            networkData
+              ? {
+                  value: `${networkData.marketCap.change}% (24h)`,
+                  isPositive: networkData.marketCap.isPositive,
+                }
+              : undefined
+          }
           icon={<Database className="h-4 w-4" />}
+          isLoading={isLoading}
         />
         <OverviewCard
           title="Transactions Per Second"
-          value={tps}
+          value={networkData?.tps.formatted || ""}
           icon={<Clock className="h-4 w-4" />}
+          isLoading={isLoading}
         />
         <OverviewCard
           title="Active Validators"
-          value={activeValidators}
+          value={networkData?.activeValidators.formatted || ""}
           icon={<Users className="h-4 w-4" />}
+          isLoading={isLoading}
         />
       </div>
     </section>
