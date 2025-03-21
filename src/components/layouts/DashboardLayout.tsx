@@ -6,6 +6,7 @@ import DashboardHeader from "../dashboard/DashboardHeader";
 import DashboardNavigation from "../dashboard/DashboardNavigation";
 import SettingsModal from "../dashboard/SettingsModal";
 import { getCurrentTheme } from "@/lib/theme";
+import ChatBot from "../chat/ChatBot";
 
 const DashboardLayout = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -79,6 +80,8 @@ const DashboardLayout = () => {
       </div>
 
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+      <ChatBot />
     </motion.div>
   );
 };

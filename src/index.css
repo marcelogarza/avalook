@@ -6,6 +6,8 @@
   themes: true;
 }
 
+@import "./styles/chat.css";
+
 /* Custom toggle styles to ensure visibility */
 .toggle {
   position: relative;
