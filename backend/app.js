@@ -49,6 +49,58 @@ app.get("/api/token-prices", async (req, res) => {
   }
 });
 
+// API endpoint for TPS with timestamp (for average TPS over the last 43114 blocks and chart data)
+app.get("/api/tps", async (req, res) => {
+  try {
+    const response = await axios.get(
+      "https://metrics.avax.network/v1/avg_tps/43114"
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error fetching TPS:", error);
+    res.status(500).json({ message: "Error fetching TPS" });
+  }
+});
+
+// API endpoint for gas used
+app.get("/api/gas", async (req, res) => {
+  try {
+    const response = await axios.get(
+      "https://metrics.avax.network/v1/gas_used/43114"
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error fetching gas used:", error);
+    res.status(500).json({ message: "Error fetching gas used" });
+  }
+});
+
+// API endpoint for transaction volume
+app.get("/api/volume", async (req, res) => {
+  try {
+    const response = await axios.get(
+      "https://metrics.avax.network/v1/tx_count/43114"
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error fetching  transaction volume:", error);
+    res.status(500).json({ message: "Error fetching transaction volume" });
+  }
+});
+
+// API endpoint for active addresses
+app.get("/api/active", async (req, res) => {
+  try {
+    const response = await axios.get(
+      "https://metrics.avax.network/v1/active_addresses/43114"
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error fetching  active addresses:", error);
+    res.status(500).json({ message: "Error fetching active addresses" });
+  }
+});
+
 // Chat completion API using OpenAI
 app.post("/api/chat-completion", async (req, res) => {
   try {
