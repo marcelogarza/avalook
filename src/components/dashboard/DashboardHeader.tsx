@@ -48,9 +48,9 @@ const DashboardHeader = ({
       <div className="flex items-center space-x-4">
         <div className="flex items-center">
           <img
-            src="https://cryptologos.cc/logos/avalanche-avax-logo.png"
+            src="src/images/logo.png"
             alt="Avalanche Logo"
-            className="h-8 w-8 mr-2"
+            className="h-10 w-10 mr-2"
           />
           <h1 className="text-xl font-bold text-base-content">AvaLook</h1>
         </div>
