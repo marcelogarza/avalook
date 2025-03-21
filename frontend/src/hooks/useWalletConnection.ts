@@ -2,10 +2,18 @@ import { useWeb3Modal } from "@web3modal/ethers5/react";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 
+// Define ethereum provider type
+type EthereumProvider = {
+  on(event: string, listener: any): void;
+  removeListener(event: string, listener: any): void;
+  request(args: any): Promise<any>;
+  [key: string]: any;
+};
+
 export function useWalletConnection() {
   const web3Modal = useWeb3Modal();
   const [connected, setConnected] = useState(false);
-  const [walletProvider, setWalletProvider] = useState(null);
+  const [walletProvider, setWalletProvider] = useState<EthereumProvider | null>(null);
 
   // Function to check wallet connection status
   const checkConnection = async () => {
@@ -18,7 +26,7 @@ export function useWalletConnection() {
         setConnected(isConnected);
 
         if (isConnected) {
-          setWalletProvider(window.ethereum);
+          setWalletProvider(window.ethereum as EthereumProvider);
         } else {
           setWalletProvider(null);
         }
@@ -38,7 +46,7 @@ export function useWalletConnection() {
       console.log("Accounts changed:", accounts);
       setConnected(accounts.length > 0);
       if (accounts.length > 0 && window.ethereum) {
-        setWalletProvider(window.ethereum);
+        setWalletProvider(window.ethereum as EthereumProvider);
       } else {
         setWalletProvider(null);
       }
@@ -61,21 +69,21 @@ export function useWalletConnection() {
     };
 
     if (window.ethereum) {
-      window.ethereum.on("accountsChanged", handleAccountsChanged);
-      window.ethereum.on("chainChanged", handleChainChanged);
-      window.ethereum.on("connect", handleConnect);
-      window.ethereum.on("disconnect", handleDisconnect);
+      (window.ethereum as EthereumProvider).on("accountsChanged", handleAccountsChanged);
+      (window.ethereum as EthereumProvider).on("chainChanged", handleChainChanged);
+      (window.ethereum as EthereumProvider).on("connect", handleConnect);
+      (window.ethereum as EthereumProvider).on("disconnect", handleDisconnect);
     }
 
     return () => {
       if (window.ethereum) {
-        window.ethereum.removeListener(
+        (window.ethereum as EthereumProvider).removeListener(
           "accountsChanged",
           handleAccountsChanged
         );
-        window.ethereum.removeListener("chainChanged", handleChainChanged);
-        window.ethereum.removeListener("connect", handleConnect);
-        window.ethereum.removeListener("disconnect", handleDisconnect);
+        (window.ethereum as EthereumProvider).removeListener("chainChanged", handleChainChanged);
+        (window.ethereum as EthereumProvider).removeListener("connect", handleConnect);
+        (window.ethereum as EthereumProvider).removeListener("disconnect", handleDisconnect);
       }
     };
   }, []);
