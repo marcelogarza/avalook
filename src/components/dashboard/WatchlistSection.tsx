@@ -109,7 +109,10 @@ const WatchlistSection = ({
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-1">
+              <Button
+                size="sm"
+                className="gap-1 bg-primary text-white dark:text-black hover:bg-primary/90"
+              >
                 <Plus className="h-4 w-4" />
                 Add
               </Button>
@@ -158,7 +161,12 @@ const WatchlistSection = ({
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={addItem}>Add to Watchlist</Button>
+                <Button
+                  onClick={addItem}
+                  className="bg-primary text-white dark:text-black hover:bg-primary/90"
+                >
+                  Add to Watchlist
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
