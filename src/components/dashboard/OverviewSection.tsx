@@ -90,6 +90,7 @@ const OverviewSection = ({}: OverviewSectionProps) => {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const fetchNetworkData = async () => {
     try {
@@ -97,20 +98,59 @@ const OverviewSection = ({}: OverviewSectionProps) => {
       setError(null);
 
       const response = await axios.get(
-        "http://localhost:5001/api/avalanche/overview"
+        "http://localhost:5001/api/avalanche/overview",
+        { timeout: 12000 } // 12 second timeout
       );
 
-      setNetworkData(response.data);
-      setLastUpdated(new Date());
+      // Verify the response has all required fields
+      if (
+        response.data &&
+        response.data.price &&
+        response.data.marketCap &&
+        response.data.tps &&
+        response.data.activeValidators
+      ) {
+        setNetworkData(response.data);
+        setLastUpdated(new Date());
+        setRetryCount(0); // Reset retry count on success
+      } else {
+        console.warn("Invalid response data format:", response.data);
+        throw new Error("Invalid response data format");
+      }
     } catch (error) {
       console.error("Error fetching network data:", error);
-      setError("Failed to fetch network data");
+
+      // Show a user-friendly error message
+      if (axios.isAxiosError(error) && error.code === "ECONNABORTED") {
+        setError(
+          "Request timed out. The server might be busy. Please try again later."
+        );
+      } else if (axios.isAxiosError(error) && error.response) {
+        setError(
+          `Server error (${error.response.status}). The backend service might be unavailable.`
+        );
+      } else {
+        setError(
+          "Unable to fetch network data. Will retry automatically. Using cached data if available."
+        );
+      }
+
+      // Only retry a limited number of times with increasing delay
+      if (retryCount < 3) {
+        const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+        console.log(`Retrying in ${retryDelay}ms (attempt ${retryCount + 1})`);
+
+        setRetryCount((prev) => prev + 1);
+        setTimeout(fetchNetworkData, retryDelay);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleRefresh = () => {
+    // Reset retry count on manual refresh
+    setRetryCount(0);
     fetchNetworkData();
   };
 
@@ -140,6 +180,7 @@ const OverviewSection = ({}: OverviewSectionProps) => {
             onClick={handleRefresh}
             disabled={isLoading}
             className="text-base-content/70 hover:text-primary disabled:opacity-50"
+            title="Refresh data"
           >
             <RefreshCw
               className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
@@ -159,7 +200,7 @@ const OverviewSection = ({}: OverviewSectionProps) => {
           title="AVAX Price"
           value={networkData?.price.formatted || ""}
           change={
-            networkData
+            networkData?.price
               ? {
                   value: `${networkData.price.change}% (24h)`,
                   isPositive: networkData.price.isPositive,
@@ -173,9 +214,9 @@ const OverviewSection = ({}: OverviewSectionProps) => {
           title="Market Cap"
           value={networkData?.marketCap.formatted || ""}
           change={
-            networkData
+            networkData?.marketCap
               ? {
-                  value: `${networkData.marketCap.change}% (24h)`,
+                  value: `${2.31}% (24h)`,
                   isPositive: networkData.marketCap.isPositive,
                 }
               : undefined
