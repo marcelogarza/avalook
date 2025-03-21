@@ -103,20 +103,24 @@ const Home = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1 }}
-          className="min-h-screen bg-base-100 text-base-content"
+          className="min-h-screen bg-base-100 text-base-content flex flex-col"
         >
           <DashboardHeader
             onSettingsClick={handleSettingsClick}
             username={walletAddress || address || "Connected Wallet"}
+            className="sticky top-0 z-10"
           />
 
-          <div className="flex">
-            <DashboardNavigation
-              activeSection={activeSection}
-              onSectionChange={handleSectionChange}
-            />
+          <div className="flex flex-1 overflow-hidden">
+            <div className="fixed top-20 left-0 h-[calc(100vh-5rem)] z-10">
+              <DashboardNavigation
+                activeSection={activeSection}
+                onSectionChange={handleSectionChange}
+                className="h-full overflow-y-auto overscroll-none"
+              />
+            </div>
 
-            <main className="flex-1 p-6 overflow-auto">
+            <main className="flex-1 p-6 overflow-y-auto overscroll-none ml-[250px]">
               <div className="max-w-7xl mx-auto space-y-6">
                 {/* Overview Section */}
                 <OverviewSection />

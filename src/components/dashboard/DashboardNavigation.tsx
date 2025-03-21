@@ -1,15 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import {
-  BarChart3,
-  Newspaper,
-  Coins,
-  Activity,
-  Star,
-  HelpCircle,
-  LogOut,
-} from "lucide-react";
+import { BarChart3, Newspaper, Coins, Activity, Star } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -65,19 +57,23 @@ interface DashboardNavigationProps {
   activeSection?: string;
   onSectionChange?: (section: string) => void;
   collapsed?: boolean;
+  className?: string;
 }
 
 const DashboardNavigation = ({
   activeSection = "overview",
   onSectionChange = () => {},
   collapsed = false,
+  className = "",
 }: DashboardNavigationProps) => {
   const handleNavClick = (section: string) => {
     onSectionChange(section);
   };
 
   return (
-    <div className="h-full w-[250px] bg-base-100 border-r border-base-300 flex flex-col justify-between py-6">
+    <div
+      className={`h-full w-[250px] bg-base-100 border-r-2 border-r-base-300 flex flex-col justify-between py-6 ${className}`}
+    >
       <div className="space-y-1 px-3">
         <NavItem
           icon={<BarChart3 size={20} />}
@@ -113,22 +109,6 @@ const DashboardNavigation = ({
           href="/watchlist"
           active={activeSection === "watchlist"}
           onClick={() => handleNavClick("watchlist")}
-        />
-      </div>
-
-      <div className="space-y-1 px-3 mt-auto">
-        <NavItem
-          icon={<HelpCircle size={20} />}
-          label="Help"
-          href="/help"
-          active={activeSection === "help"}
-          onClick={() => handleNavClick("help")}
-        />
-        <NavItem
-          icon={<LogOut size={20} />}
-          label="Logout"
-          href="/logout"
-          onClick={() => console.log("Logout clicked")}
         />
       </div>
     </div>

@@ -1,10 +1,10 @@
 import React from "react";
 import {
   Search,
-  Bell,
   Settings,
   User,
   ChevronDown,
+  HelpCircle,
   LogOut,
 } from "lucide-react";
 import { Button } from "../ui/button";
@@ -30,21 +30,30 @@ interface DashboardHeaderProps {
   onSettingsClick?: () => void;
   username?: string;
   avatarUrl?: string;
+  className?: string;
 }
 
 const DashboardHeader = ({
   onSettingsClick = () => {},
   username = "John Doe",
   avatarUrl = "",
+  className = "",
 }: DashboardHeaderProps) => {
   const { open } = useWeb3Modal();
+
+  const handleHelpClick = () => {
+    // Handle help click - could open documentation or a help modal
+    console.log("Help clicked");
+  };
 
   const handleManageWallet = () => {
     open();
   };
 
   return (
-    <header className="flex items-center justify-between h-20 px-6 border-b border-base-300 bg-base-100">
+    <header
+      className={`flex items-center justify-between h-20 px-6 border-b border-base-300 bg-base-100 ${className}`}
+    >
       <div className="flex items-center space-x-4">
         <div className="flex items-center">
           <img
@@ -72,14 +81,14 @@ const DashboardHeader = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative text-base-content hover:bg-base-200"
+                onClick={handleHelpClick}
+                className="text-base-content hover:bg-base-200"
               >
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-error rounded-full"></span>
+                <HelpCircle className="h-5 w-5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent className="bg-base-200 text-base-content border-base-300">
-              <p>Notifications</p>
+              <p>Help</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

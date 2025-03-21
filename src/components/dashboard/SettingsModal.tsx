@@ -17,16 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Bell,
-  Moon,
-  Sun,
-  Layout,
-  Eye,
-  Palette,
-  Globe,
-  Shield,
-} from "lucide-react";
+import { Moon, Sun, Layout, Shield, Globe } from "lucide-react";
 import { getCurrentTheme, setTheme } from "@/lib/theme";
 
 interface SettingsModalProps {
@@ -65,24 +56,13 @@ const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid grid-cols-4 gap-2 mb-6">
+            <TabsList className="grid grid-cols-2 gap-2 mb-6">
               <TabsTrigger
                 value="appearance"
                 className="flex items-center gap-2"
               >
-                <Palette size={16} />
-                <span>Appearance</span>
-              </TabsTrigger>
-              <TabsTrigger value="layout" className="flex items-center gap-2">
                 <Layout size={16} />
-                <span>Layout</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="notifications"
-                className="flex items-center gap-2"
-              >
-                <Bell size={16} />
-                <span>Notifications</span>
+                <span>Appearance & Layout</span>
               </TabsTrigger>
               <TabsTrigger value="privacy" className="flex items-center gap-2">
                 <Shield size={16} />
@@ -110,57 +90,6 @@ const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
                   <div className="flex items-center gap-2">
                     <Moon size={18} className="text-blue-500" />
                     <span>Dark Mode</span>
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <h3 className="text-lg font-medium mb-2">Color Scheme</h3>
-                  <Select defaultValue="default">
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select color scheme" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="default">Default</SelectItem>
-                      <SelectItem value="avalanche">Avalanche</SelectItem>
-                      <SelectItem value="high-contrast">
-                        High Contrast
-                      </SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="pt-4">
-                  <h3 className="text-lg font-medium mb-2">Font Size</h3>
-                  <Select defaultValue="medium">
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select font size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="small">Small</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="large">Large</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="layout" className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Dashboard Layout</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="border rounded-md p-4 flex flex-col items-center cursor-pointer hover:border-primary">
-                    <div className="w-full h-32 bg-muted rounded-md mb-2 flex items-center justify-center">
-                      <Eye size={24} className="text-muted-foreground" />
-                    </div>
-                    <span>Default</span>
-                  </div>
-                  <div className="border rounded-md p-4 flex flex-col items-center cursor-pointer hover:border-primary">
-                    <div className="w-full h-32 bg-muted rounded-md mb-2 flex items-center justify-center">
-                      <Eye size={24} className="text-muted-foreground" />
-                    </div>
-                    <span>Compact</span>
                   </div>
                 </div>
 
@@ -193,48 +122,6 @@ const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
                     <span>Show Watchlist</span>
                     <Switch id="show-watchlist" defaultChecked />
                   </div>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="notifications" className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">
-                  Notification Preferences
-                </h3>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span>Price Alerts</span>
-                    <Switch id="price-alerts" defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Network Status Changes</span>
-                    <Switch id="network-status" defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>News Updates</span>
-                    <Switch id="news-updates" defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Watchlist Alerts</span>
-                    <Switch id="watchlist-alerts" defaultChecked />
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <h3 className="text-lg font-medium mb-2">Alert Frequency</h3>
-                  <Select defaultValue="realtime">
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select alert frequency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="realtime">Real-time</SelectItem>
-                      <SelectItem value="hourly">Hourly Digest</SelectItem>
-                      <SelectItem value="daily">Daily Digest</SelectItem>
-                      <SelectItem value="weekly">Weekly Digest</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
             </TabsContent>
