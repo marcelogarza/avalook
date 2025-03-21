@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import {
   useWeb3Modal,
   useWeb3ModalState,
@@ -7,7 +8,7 @@ import {
 import { Button } from "../components/ui/button";
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getCurrentTheme, toggleTheme } from "@/lib/theme";
+import { getCurrentTheme, toggleTheme } from "../lib/theme";
 
 export default function Web3Connect() {
   const { open } = useWeb3Modal();
