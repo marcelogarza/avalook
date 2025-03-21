@@ -55,21 +55,17 @@ const OverviewCard = ({
           <div className="text-2xl font-bold text-base-content">{value}</div>
         )}
         {change && (
-          <p className="text-xs mt-1">
-            <span
-              className={
-                change.isPositive
-                  ? "text-success flex items-center"
-                  : "text-error flex items-center"
-              }
-            >
-              {change.isPositive ? (
-                <ArrowUp className="h-3 w-3 mr-1" />
-              ) : (
-                <ArrowDown className="h-3 w-3 mr-1" />
-              )}
-              {change.value} (24h)
-            </span>
+          <p
+            className={`mt-1 flex items-center text-xs ${
+              change.isPositive ? "text-success" : "text-error"
+            }`}
+          >
+            {change.isPositive ? (
+              <ArrowUp className="mr-1 h-3 w-3" />
+            ) : (
+              <ArrowDown className="mr-1 h-3 w-3" />
+            )}
+            {change.value}
           </p>
         )}
       </CardContent>
@@ -157,7 +153,7 @@ const OverviewSection = () => {
         "http://localhost:5001/api/token-prices"
       );
       const avaxData = priceResponse.data["avalanche-2"];
-      
+
       if (avaxData) {
         setAvaxPrice({
           value: `$${avaxData.usd.toFixed(2)}`,
@@ -166,7 +162,7 @@ const OverviewSection = () => {
             isPositive: avaxData.usd_24h_change >= 0,
           },
         });
-        
+
         // Set market cap from the same data
         setMarketCap({
           value: formatCurrency(avaxData.usd_market_cap),
@@ -176,7 +172,7 @@ const OverviewSection = () => {
           },
         });
       }
-      
+
       setLoading((prev) => ({ ...prev, avaxPrice: false, marketCap: false }));
 
       // Fetch TPS
@@ -211,9 +207,9 @@ const OverviewSection = () => {
 
       // Set TVL (mocked for now, would come from DeFi Llama API in production)
       setTVL({
-        value: "$542.3M",
+        value: "$2.1B",
         change: {
-          value: "2.1%",
+          value: "1.2%",
           isPositive: true,
         },
       });
@@ -227,32 +223,27 @@ const OverviewSection = () => {
     }
   };
 
-  const handleRefresh = () => {
-    fetchNetworkData();
-  };
-
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-base-content">Network Overview</h2>
-        <div className="flex items-center gap-2 text-sm text-base-content/70">
-          {lastUpdated && (
-            <span className="text-xs">
-              Last updated: {lastUpdated.toLocaleTimeString()}
-            </span>
-          )}
-          <button
-            onClick={handleRefresh}
-            className="p-1 rounded-full hover:bg-base-300 transition-colors"
-            disabled={refreshing}
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
-            />
-          </button>
-        </div>
+    <section className="grid gap-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold tracking-tight">Overview</h2>
+        <button
+          onClick={fetchNetworkData}
+          className="flex items-center space-x-1 text-xs text-primary hover:text-primary/80 transition-colors"
+          disabled={refreshing}
+        >
+          <RefreshCw
+            className={`h-3 w-3 ${refreshing ? "animate-spin" : ""}`}
+          />
+          <span>
+            {refreshing
+              ? "Refreshing..."
+              : lastUpdated
+              ? `Updated: ${lastUpdated.toLocaleTimeString()}`
+              : "Refresh"}
+          </span>
+        </button>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <OverviewCard
           title="AVAX Price"
@@ -260,29 +251,7 @@ const OverviewSection = () => {
           change={avaxPrice.change}
           icon={<DollarSign className="h-4 w-4" />}
           isLoading={loading.avaxPrice}
-          tooltip="Current AVAX token price in USD"
-        />
-        <OverviewCard
-          title="Transactions Per Second"
-          value={tps.value}
-          change={tps.change}
-          icon={<Activity className="h-4 w-4" />}
-          isLoading={loading.tps}
-          tooltip="Average number of transactions processed per second on the network"
-        />
-        <OverviewCard
-          title="Active Validators"
-          value={validators.value}
-          icon={<Users className="h-4 w-4" />}
-          isLoading={loading.validators}
-          tooltip="Number of active validators securing the Avalanche network"
-        />
-        <OverviewCard
-          title="Block Time"
-          value={blockTime.value}
-          icon={<Clock className="h-4 w-4" />}
-          isLoading={loading.blockTime}
-          tooltip="Average time between blocks on the C-Chain"
+          tooltip="Current AVAX token price from CoinGecko"
         />
         <OverviewCard
           title="Market Cap"
@@ -290,18 +259,40 @@ const OverviewSection = () => {
           change={marketCap.change}
           icon={<BarChart2 className="h-4 w-4" />}
           isLoading={loading.marketCap}
-          tooltip="Total market capitalization of AVAX token"
+          tooltip="Total market capitalization of AVAX tokens"
         />
         <OverviewCard
-          title="Total Value Locked (TVL)"
+          title="TPS"
+          value={tps.value}
+          change={tps.change}
+          icon={<Activity className="h-4 w-4" />}
+          isLoading={loading.tps}
+          tooltip="Transactions per second on the network"
+        />
+        <OverviewCard
+          title="Active Validators"
+          value={validators.value}
+          icon={<Users className="h-4 w-4" />}
+          isLoading={loading.validators}
+          tooltip="Number of active validators securing the network"
+        />
+        <OverviewCard
+          title="Block Time"
+          value={blockTime.value}
+          icon={<Clock className="h-4 w-4" />}
+          isLoading={loading.blockTime}
+          tooltip="Average time between blocks"
+        />
+        <OverviewCard
+          title="Total Value Locked"
           value={tvl.value}
           change={tvl.change}
           icon={<Database className="h-4 w-4" />}
           isLoading={loading.tvl}
-          tooltip="Total value locked in Avalanche DeFi protocols"
+          tooltip="Total value locked in DeFi protocols on Avalanche"
         />
       </div>
-    </div>
+    </section>
   );
 };
 

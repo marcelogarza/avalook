@@ -2,11 +2,14 @@ const express = require("express");
 const dotenv = require("dotenv");
 const axios = require("axios");
 const cors = require("cors");
+const OpenAI = require("openai");
 
 dotenv.config(); // Load environment variables
 
 const app = express();
 const port = process.env.PORT || 5001;
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Enable CORS for frontend
 app.use(cors());
@@ -165,8 +168,8 @@ const fallbackData = {
 };
 
 // Simple route to test server is working
-app.get('/', (req, res) => {
-  res.send('Backend server is running');
+app.get("/", (req, res) => {
+  res.send("Backend server is running");
 });
 
 // API endpoint to interact with OpenAI's chat API
@@ -176,15 +179,17 @@ app.post("/api/chat-completion", async (req, res) => {
       "https://api.openai.com/v1/chat/completions",
       {
         model: "gpt-4", // Update the model as needed
-        messages: [{
-          role: "user",
-          content: "Write a one-sentence bedtime story about a unicorn.",
-        }],
+        messages: [
+          {
+            role: "user",
+            content: "Write a one-sentence bedtime story about a unicorn.",
+          },
+        ],
       },
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         },
       }
     );
@@ -196,9 +201,31 @@ app.post("/api/chat-completion", async (req, res) => {
       message: response.data.choices[0].message.content,
     });
   } catch (error) {
-    console.error("Error with OpenAI API:", error.response ? error.response.data : error.message);
+    console.error(
+      "Error with OpenAI API:",
+      error.response ? error.response.data : error.message
+    );
     res.status(500).json({
       message: "Error with OpenAI API",
+      error: error.response ? error.response.data : error.message,
+    });
+  }
+});
+
+// API endpoint to get AVAX price from CoinGecko
+app.get("/api/avax-price", async (req, res) => {
+  try {
+    const response = await axios.get(
+      `https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2&vs_currencies=usd`
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error(
+      "Error with OpenAI API:",
+      error.response ? error.response.data : error.message
+    );
+    res.status(500).json({
+      message: "Error with CoinGecko API",
       error: error.response ? error.response.data : error.message,
     });
   }
@@ -306,17 +333,6 @@ async function fetchAvaxPrice() {
     return fallbackData.avaxPrice;
   }
 }
-
-// API endpoint to get AVAX price from CoinGecko
-app.get("/api/avax-price", async (req, res) => {
-  try {
-    const data = await fetchAvaxPrice();
-    res.json(data);
-  } catch (error) {
-    console.error("Error handling AVAX price request:", error.message);
-    res.status(500).json({ error: "Failed to fetch AVAX price" });
-  }
-});
 
 // Helper function to fetch TPS data
 async function fetchTPS() {
