@@ -24,24 +24,14 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { Badge } from "../../components/ui/badge";
-import { Switch } from "../../components/ui/switch";
 import { Label } from "../../components/ui/label";
-import {
-  Plus,
-  X,
-  Bell,
-  ArrowUpRight,
-  Search,
-  AlertTriangle,
-} from "lucide-react";
+import { Plus, X, ArrowUpRight, Search, AlertTriangle } from "lucide-react";
 
 interface WatchlistItem {
   id: string;
   name: string;
   type: "Protocol" | "Token";
   price?: number;
-  change24h?: number;
-  alerts: boolean;
 }
 
 interface WatchlistSectionProps {
@@ -66,8 +56,6 @@ const WatchlistSection = ({
         name: newItemName,
         type: newItemType,
         price: Math.random() * 100,
-        change24h: Math.random() * 20 - 10,
-        alerts: false,
       };
       setItems([...items, newItem]);
       setNewItemName("");
@@ -77,14 +65,6 @@ const WatchlistSection = ({
 
   const removeItem = (id: string) => {
     setItems(items.filter((item) => item.id !== id));
-  };
-
-  const toggleAlert = (id: string) => {
-    setItems(
-      items.map((item) =>
-        item.id === id ? { ...item, alerts: !item.alerts } : item
-      )
-    );
   };
 
   const filteredItems = items.filter((item) =>
@@ -195,27 +175,25 @@ const WatchlistSection = ({
             <Table>
               <TableHeader>
                 <TableRow className="border-base-300">
-                  <TableHead className="text-base-content">Name</TableHead>
-                  <TableHead className="text-base-content">Type</TableHead>
-                  <TableHead className="text-right text-base-content">
+                  <TableHead className="text-base-content w-[30%] pl-2">
+                    Name
+                  </TableHead>
+                  <TableHead className="text-base-content w-[20%] pl-2">
+                    Type
+                  </TableHead>
+                  <TableHead className="text-base-content w-[20%] pl-2">
                     Price
                   </TableHead>
-                  <TableHead className="text-right text-base-content">
-                    24h Change
-                  </TableHead>
-                  <TableHead className="text-center text-base-content">
-                    Alerts
-                  </TableHead>
-                  <TableHead className="w-[80px]"></TableHead>
+                  <TableHead className="w-[30%]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredItems.map((item) => (
                   <TableRow key={item.id} className="border-base-300">
-                    <TableCell className="font-medium text-base-content">
+                    <TableCell className="font-medium text-base-content pl-2">
                       {item.name}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="pl-2">
                       <Badge
                         variant={
                           item.type === "Protocol" ? "outline" : "secondary"
@@ -224,30 +202,8 @@ const WatchlistSection = ({
                         {item.type}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right text-base-content">
+                    <TableCell className="text-base-content pl-2">
                       {item.price ? `$${item.price.toFixed(2)}` : "--"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span
-                        className={
-                          item.change24h && item.change24h > 0
-                            ? "text-success"
-                            : "text-error"
-                        }
-                      >
-                        {item.change24h
-                          ? `${
-                              item.change24h > 0 ? "+" : ""
-                            }${item.change24h.toFixed(2)}%`
-                          : "--"}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Switch
-                        checked={item.alerts}
-                        onCheckedChange={() => toggleAlert(item.id)}
-                        aria-label="Toggle alerts"
-                      />
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-2">
@@ -281,40 +237,30 @@ const defaultWatchlistItems: WatchlistItem[] = [
     name: "Trader Joe",
     type: "Protocol",
     price: 0.42,
-    change24h: 5.23,
-    alerts: true,
   },
   {
     id: "2",
     name: "AVAX",
     type: "Token",
     price: 28.45,
-    change24h: -2.18,
-    alerts: true,
   },
   {
     id: "3",
     name: "Pangolin",
     type: "Protocol",
     price: 0.03,
-    change24h: 1.05,
-    alerts: false,
   },
   {
     id: "4",
     name: "GMX",
     type: "Token",
     price: 42.67,
-    change24h: 8.92,
-    alerts: false,
   },
   {
     id: "5",
     name: "Platypus Finance",
     type: "Protocol",
     price: 0.12,
-    change24h: -4.37,
-    alerts: true,
   },
 ];
 
