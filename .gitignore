@@ -35,3 +35,4 @@ core
 node_modules
 
 .env.env
+.env
