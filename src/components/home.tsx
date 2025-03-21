@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardHeader from "./dashboard/DashboardHeader";
 import DashboardNavigation from "./dashboard/DashboardNavigation";
 import OverviewSection from "./dashboard/OverviewSection";
@@ -7,10 +7,25 @@ import NewsFeedSection from "./dashboard/NewsFeedSection";
 import TokenPriceSection from "./dashboard/TokenPriceSection";
 import WatchlistSection from "./dashboard/WatchlistSection";
 import SettingsModal from "./dashboard/SettingsModal";
+import { getCurrentTheme } from "@/lib/theme";
 
 const Home = () => {
   const [activeSection, setActiveSection] = useState("overview");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState("light");
+
+  useEffect(() => {
+    setCurrentTheme(getCurrentTheme());
+    // Add event listener to update theme state when it changes
+    const observer = new MutationObserver(() => {
+      setCurrentTheme(getCurrentTheme());
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   const handleSectionChange = (section: string) => {
     setActiveSection(section);
@@ -21,7 +36,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-base-100 text-base-content">
       <DashboardHeader onSettingsClick={handleSettingsClick} />
 
       <div className="flex">

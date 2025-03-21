@@ -43,7 +43,7 @@ const NavItem = ({
               "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
               active
                 ? "bg-primary/10 text-primary font-medium"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                : "text-base-content/70 hover:bg-base-200 hover:text-base-content"
             )}
             onClick={onClick}
           >
@@ -51,7 +51,12 @@ const NavItem = ({
             <span>{label}</span>
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="right">{label}</TooltipContent>
+        <TooltipContent
+          side="right"
+          className="bg-base-200 text-base-content border-base-300"
+        >
+          {label}
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -73,10 +78,8 @@ const DashboardNavigation = ({
   };
 
   return (
-    <div className="h-full w-[250px] bg-background border-r flex flex-col justify-between py-6">
+    <div className="h-full w-[250px] bg-base-100 border-r border-base-300 flex flex-col justify-between py-6">
       <div className="space-y-1 px-3">
-
-
         <NavItem
           icon={<BarChart3 size={20} />}
           label="Charts"
