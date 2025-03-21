@@ -44,18 +44,16 @@ const OverviewCard = ({
             </span>
           )}
         </CardTitle>
-        <div className="h-4 w-4 text-primary">{icon}</div>
+        <div className="h-8 w-8 p-1.5 rounded-full bg-primary/10 text-primary">
+          {icon}
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-base-content transition-opacity duration-300">
-          {isLoading ? (
-            <div className="flex items-center">
-              <div className="animate-pulse bg-base-300 h-8 w-28 rounded"></div>
-            </div>
-          ) : (
-            value || "-"
-          )}
-        </div>
+        {isLoading ? (
+          <div className="h-6 w-1/2 animate-pulse bg-base-300 rounded"></div>
+        ) : (
+          <div className="text-2xl font-bold text-base-content">{value}</div>
+        )}
         {change && (
           <p
             className={`mt-1 flex items-center text-xs ${
@@ -63,9 +61,9 @@ const OverviewCard = ({
             }`}
           >
             {change.isPositive ? (
-              <ArrowUp className="mr-1 h-4 w-4" />
+              <ArrowUp className="mr-1 h-3 w-3" />
             ) : (
-              <ArrowDown className="mr-1 h-4 w-4" />
+              <ArrowDown className="mr-1 h-3 w-3" />
             )}
             {change.value}
           </p>
@@ -75,228 +73,223 @@ const OverviewCard = ({
   );
 };
 
-interface NetworkData {
-  price: {
-    value: number;
-    formatted: string;
-    change: string;
-    isPositive: boolean;
-  };
-  marketCap: {
-    value: number;
-    formatted: string;
-    change: string;
-    isPositive: boolean;
-  };
-  tps: {
-    value: number;
-    formatted: string;
-  };
-  activeValidators: {
-    value: number;
-    formatted: string;
-  };
-}
+const OverviewSection = () => {
+  const [avaxPrice, setAvaxPrice] = useState<{
+    value: string;
+    change: { value: string; isPositive: boolean };
+  }>({
+    value: "$0.00",
+    change: { value: "0.0%", isPositive: true },
+  });
 
-// Mock data for fallback
-const mockNetworkData: NetworkData = {
-  price: {
-    value: 27.42,
-    formatted: "$27.42",
-    change: "1.94",
-    isPositive: true,
-  },
-  marketCap: {
-    value: 9812000000,
-    formatted: "$9.81B",
-    change: "2.31",
-    isPositive: true,
-  },
-  tps: {
-    value: 20.3,
-    formatted: "20.3",
-  },
-  activeValidators: {
-    value: 1198,
-    formatted: "1,198",
-  },
-};
+  const [tps, setTps] = useState<{
+    value: string;
+    change?: { value: string; isPositive: boolean };
+  }>({
+    value: "0",
+  });
 
-// API base URL - use environment variable if available
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+  const [validators, setValidators] = useState<{
+    value: string;
+    change?: { value: string; isPositive: boolean };
+  }>({
+    value: "0",
+  });
 
-interface OverviewSectionProps {}
+  const [blockTime, setBlockTime] = useState<{
+    value: string;
+    change?: { value: string; isPositive: boolean };
+  }>({
+    value: "0s",
+  });
 
-const OverviewSection = ({}: OverviewSectionProps) => {
-  const [networkData, setNetworkData] = useState<NetworkData | null>(null);
+  const [marketCap, setMarketCap] = useState<{
+    value: string;
+    change?: { value: string; isPositive: boolean };
+  }>({
+    value: "$0",
+  });
+
+  const [tvl, setTVL] = useState<{
+    value: string;
+    change?: { value: string; isPositive: boolean };
+  }>({
+    value: "$0",
+  });
+
+  const [loading, setLoading] = useState({
+    avaxPrice: true,
+    tps: true,
+    validators: true,
+    blockTime: true,
+    marketCap: true,
+    tvl: true,
+  });
+
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchNetworkData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  useEffect(() => {
+    fetchNetworkData();
+  }, []);
 
-      const response = await axios.get(
-        `${API_BASE_URL}/api/avalanche/overview`,
-        {
-          timeout: 30000,
-          headers: {
-            "Cache-Control": "no-cache",
-            Pragma: "no-cache",
-            Expires: "0",
-          },
-        }
-      );
-
-      // Verify the response has all required fields
-      if (
-        response.data &&
-        response.data.price &&
-        response.data.marketCap &&
-        response.data.tps &&
-        response.data.activeValidators
-      ) {
-        setNetworkData(response.data);
-        setLastUpdated(new Date());
-        setRetryCount(0); // Reset retry count on success
-      } else {
-        console.warn("Invalid response data format:", response.data);
-        throw new Error("Invalid response data format");
-      }
-    } catch (error) {
-      console.error("Error fetching network data:", error);
-
-      // If we already have data, keep using it instead of replacing with mock data
-      if (!networkData) {
-        console.log("No existing data, using mock data");
-        setNetworkData(mockNetworkData);
-      } else {
-        console.log(
-          "Keeping existing data instead of replacing with mock data"
-        );
-      }
-
-      setLastUpdated(new Date());
-
-      // Only log error in console, don't display to user
-      if (axios.isAxiosError(error) && error.code === "ECONNABORTED") {
-        console.log("Request timed out. Using existing or mock data.");
-      } else if (axios.isAxiosError(error) && error.response) {
-        console.log(
-          `Server error (${error.response.status}). Using existing or mock data.`
-        );
-      } else {
-        console.log(
-          "Unable to fetch network data. Using existing or mock data."
-        );
-      }
-
-      // Only retry once with a short delay
-      if (retryCount < 1) {
-        const retryDelay = 2000; // Just retry once after 2 seconds
-        console.log(`Retrying in ${retryDelay}ms`);
-
-        setRetryCount((prev) => prev + 1);
-        setTimeout(fetchNetworkData, retryDelay);
-      }
-    } finally {
-      setIsLoading(false);
+  const formatCurrency = (value: number): string => {
+    if (value >= 1e9) {
+      return `$${(value / 1e9).toFixed(2)}B`;
+    } else if (value >= 1e6) {
+      return `$${(value / 1e6).toFixed(2)}M`;
+    } else if (value >= 1e3) {
+      return `$${(value / 1e3).toFixed(2)}K`;
+    } else {
+      return `$${value.toFixed(2)}`;
     }
   };
 
-  const handleRefresh = () => {
-    // Reset retry count on manual refresh
-    setRetryCount(0);
-    fetchNetworkData();
+  const fetchNetworkData = async () => {
+    setRefreshing(true);
+    try {
+      // Fetch AVAX price
+      const priceResponse = await axios.get(
+        "http://localhost:5001/api/token-prices"
+      );
+      const avaxData = priceResponse.data["avalanche-2"];
+
+      if (avaxData) {
+        setAvaxPrice({
+          value: `$${avaxData.usd.toFixed(2)}`,
+          change: {
+            value: `${Math.abs(avaxData.usd_24h_change).toFixed(2)}%`,
+            isPositive: avaxData.usd_24h_change >= 0,
+          },
+        });
+
+        // Set market cap from the same data
+        setMarketCap({
+          value: formatCurrency(avaxData.usd_market_cap),
+          change: {
+            value: `${Math.abs(avaxData.usd_24h_change).toFixed(2)}%`,
+            isPositive: avaxData.usd_24h_change >= 0,
+          },
+        });
+      }
+
+      setLoading((prev) => ({ ...prev, avaxPrice: false, marketCap: false }));
+
+      // Fetch TPS
+      const tpsResponse = await axios.get("http://localhost:5001/api/tps");
+      if (tpsResponse.data) {
+        setTps({
+          value: tpsResponse.data.tps.toFixed(1),
+          change: {
+            value: "0.3%",
+            isPositive: true,
+          },
+        });
+      }
+      setLoading((prev) => ({ ...prev, tps: false }));
+
+      // Fetch Validators
+      const validatorsResponse = await axios.get(
+        "http://localhost:5001/api/validators"
+      );
+      if (validatorsResponse.data) {
+        setValidators({
+          value: validatorsResponse.data.count.toLocaleString(),
+        });
+      }
+      setLoading((prev) => ({ ...prev, validators: false }));
+
+      // Set block time (mocked for now)
+      setBlockTime({
+        value: "2.3s",
+      });
+      setLoading((prev) => ({ ...prev, blockTime: false }));
+
+      // Set TVL (mocked for now, would come from DeFi Llama API in production)
+      setTVL({
+        value: "$2.1B",
+        change: {
+          value: "1.2%",
+          isPositive: true,
+        },
+      });
+      setLoading((prev) => ({ ...prev, tvl: false }));
+
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error("Error fetching network data:", error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
-  useEffect(() => {
-    // Fetch data on component mount
-    fetchNetworkData();
-
-    // Set up auto-refresh every 2 minutes
-    const refreshInterval = setInterval(() => {
-      fetchNetworkData();
-    }, 120000); // 120000 ms = 2 minutes
-
-    return () => {
-      // Clean up interval on unmount
-      clearInterval(refreshInterval);
-    };
-  }, []);
-
   return (
-    <section className="w-full bg-base-200 p-4 rounded-lg">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-base-content">
-          Avalanche Network Overview
-        </h2>
-        <div className="flex items-center space-x-3">
-          {lastUpdated && (
-            <p className="text-xs text-base-content/60">
-              Updated: {lastUpdated.toLocaleTimeString()}
-            </p>
-          )}
-          <button
-            onClick={handleRefresh}
-            disabled={isLoading}
-            className="text-base-content/70 hover:text-primary disabled:opacity-50 p-1 rounded-full hover:bg-base-300 transition-colors duration-200"
-            title="Refresh data"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />
-          </button>
-        </div>
+    <section className="grid gap-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold tracking-tight">Overview</h2>
+        <button
+          onClick={fetchNetworkData}
+          className="flex items-center space-x-1 text-xs text-primary hover:text-primary/80 transition-colors"
+          disabled={refreshing}
+        >
+          <RefreshCw
+            className={`h-3 w-3 ${refreshing ? "animate-spin" : ""}`}
+          />
+          <span>
+            {refreshing
+              ? "Refreshing..."
+              : lastUpdated
+              ? `Updated: ${lastUpdated.toLocaleTimeString()}`
+              : "Refresh"}
+          </span>
+        </button>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <OverviewCard
           title="AVAX Price"
-          value={networkData?.price.formatted || ""}
-          change={
-            networkData?.price
-              ? {
-                  value: `${networkData.price.change}% (24h)`,
-                  isPositive: networkData.price.isPositive,
-                }
-              : undefined
-          }
+          value={avaxPrice.value}
+          change={avaxPrice.change}
           icon={<DollarSign className="h-4 w-4" />}
-          isLoading={isLoading}
-          tooltip="Current AVAX token price in USD with 24-hour price change"
+          isLoading={loading.avaxPrice}
+          tooltip="Current AVAX token price from CoinGecko"
         />
         <OverviewCard
           title="Market Cap"
-          value={networkData?.marketCap.formatted || ""}
-          change={
-            networkData?.marketCap
-              ? {
-                  value: `${networkData.marketCap.change}% (24h)`,
-                  isPositive: networkData.marketCap.isPositive,
-                }
-              : undefined
-          }
+          value={marketCap.value}
+          change={marketCap.change}
           icon={<BarChart2 className="h-4 w-4" />}
-          isLoading={isLoading}
-          tooltip="Total AVAX market capitalization in USD"
+          isLoading={loading.marketCap}
+          tooltip="Total market capitalization of AVAX tokens"
         />
         <OverviewCard
-          title="Transactions Per Second"
-          value={networkData?.tps.formatted || ""}
+          title="TPS"
+          value={tps.value}
+          change={tps.change}
           icon={<Activity className="h-4 w-4" />}
-          isLoading={isLoading}
-          tooltip="Average number of transactions processed per second"
+          isLoading={loading.tps}
+          tooltip="Transactions per second on the network"
         />
         <OverviewCard
           title="Active Validators"
-          value={networkData?.activeValidators.formatted || ""}
+          value={validators.value}
           icon={<Users className="h-4 w-4" />}
-          isLoading={isLoading}
-          tooltip="Number of active validators securing the Avalanche network"
+          isLoading={loading.validators}
+          tooltip="Number of active validators securing the network"
+        />
+        <OverviewCard
+          title="Block Time"
+          value={blockTime.value}
+          icon={<Clock className="h-4 w-4" />}
+          isLoading={loading.blockTime}
+          tooltip="Average time between blocks"
+        />
+        <OverviewCard
+          title="Total Value Locked"
+          value={tvl.value}
+          change={tvl.change}
+          icon={<Database className="h-4 w-4" />}
+          isLoading={loading.tvl}
+          tooltip="Total value locked in DeFi protocols on Avalanche"
         />
       </div>
     </section>
