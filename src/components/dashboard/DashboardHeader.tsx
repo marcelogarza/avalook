@@ -1,5 +1,12 @@
 import React from "react";
-import { Search, Bell, Settings, User, ChevronDown } from "lucide-react";
+import {
+  Search,
+  Bell,
+  Settings,
+  User,
+  ChevronDown,
+  LogOut,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -17,6 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { useWeb3Modal } from "@web3modal/ethers5/react";
 
 interface DashboardHeaderProps {
   onSettingsClick?: () => void;
@@ -29,6 +37,12 @@ const DashboardHeader = ({
   username = "John Doe",
   avatarUrl = "",
 }: DashboardHeaderProps) => {
+  const { open } = useWeb3Modal();
+
+  const handleManageWallet = () => {
+    open();
+  };
+
   return (
     <header className="flex items-center justify-between h-20 px-6 border-b bg-background">
       <div className="flex items-center space-x-4">
@@ -104,12 +118,15 @@ const DashboardHeader = ({
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={onSettingsClick}>
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Log out</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleManageWallet}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Manage Wallet</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
