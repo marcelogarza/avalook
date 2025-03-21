@@ -1,16 +1,10 @@
-import React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Input } from "../ui/input";
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { Search, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface NewsItem {
   id: string;
@@ -27,85 +21,45 @@ interface NewsFeedSectionProps {
 }
 
 const NewsFeedSection = ({ news = defaultNews }: NewsFeedSectionProps) => {
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
+  const filteredNews =
+    activeCategory === "all"
+      ? news
+      : news.filter(
+          (item) => item.category.toLowerCase() === activeCategory.toLowerCase()
+        );
+
   return (
     <Card className="w-full h-full bg-base-100 shadow-sm border border-base-300">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-xl font-bold text-base-content">
-            Avalanche News
-          </CardTitle>
-          <div className="relative w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-base-content/70" />
-            <Input placeholder="Search news..." className="pl-8" />
-          </div>
-        </div>
-        <CardDescription className="text-base-content/70">
-          Latest updates from the Avalanche ecosystem
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="mb-4">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-xl font-bold text-base-content">
+          Avalanche News
+        </CardTitle>
+        <Tabs defaultValue="all" onValueChange={setActiveCategory}>
+          <TabsList>
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="protocol">Protocol</TabsTrigger>
             <TabsTrigger value="defi">DeFi</TabsTrigger>
             <TabsTrigger value="nft">NFTs</TabsTrigger>
             <TabsTrigger value="governance">Governance</TabsTrigger>
           </TabsList>
-
-          <TabsContent
-            value="all"
-            className="space-y-4 max-h-[280px] overflow-y-auto pr-2"
-          >
-            {news.map((item) => (
-              <NewsCard key={item.id} item={item} />
-            ))}
-          </TabsContent>
-
-          <TabsContent
-            value="protocol"
-            className="space-y-4 max-h-[280px] overflow-y-auto pr-2"
-          >
-            {news
-              .filter((item) => item.category === "Protocol")
-              .map((item) => (
-                <NewsCard key={item.id} item={item} />
-              ))}
-          </TabsContent>
-
-          <TabsContent
-            value="defi"
-            className="space-y-4 max-h-[280px] overflow-y-auto pr-2"
-          >
-            {news
-              .filter((item) => item.category === "DeFi")
-              .map((item) => (
-                <NewsCard key={item.id} item={item} />
-              ))}
-          </TabsContent>
-
-          <TabsContent
-            value="nft"
-            className="space-y-4 max-h-[280px] overflow-y-auto pr-2"
-          >
-            {news
-              .filter((item) => item.category === "NFT")
-              .map((item) => (
-                <NewsCard key={item.id} item={item} />
-              ))}
-          </TabsContent>
-
-          <TabsContent
-            value="governance"
-            className="space-y-4 max-h-[280px] overflow-y-auto pr-2"
-          >
-            {news
-              .filter((item) => item.category === "Governance")
-              .map((item) => (
-                <NewsCard key={item.id} item={item} />
-              ))}
-          </TabsContent>
         </Tabs>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4 max-h-[280px] overflow-y-auto pr-2">
+          {filteredNews.map((item) => (
+            <NewsCard key={item.id} item={item} />
+          ))}
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-base-300">
+          <Link to="/news" className="block w-full">
+            <button className="w-full h-10 py-2 text-center text-sm text-primary hover:text-primary-focus font-medium">
+              View All News
+            </button>
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );

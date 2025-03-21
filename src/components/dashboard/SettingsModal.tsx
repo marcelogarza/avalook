@@ -62,7 +62,7 @@ const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
                 className="flex items-center gap-2"
               >
                 <Layout size={16} />
-                <span>Appearance & Layout</span>
+                <span>Appearance</span>
               </TabsTrigger>
               <TabsTrigger value="privacy" className="flex items-center gap-2">
                 <Shield size={16} />
@@ -72,7 +72,6 @@ const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
 
             <TabsContent value="appearance" className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Theme</h3>
                 <div className="flex items-center justify-center gap-4">
                   <div className="flex items-center gap-2">
                     <Sun size={18} className="text-yellow-500" />
@@ -90,37 +89,6 @@ const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
                   <div className="flex items-center gap-2">
                     <Moon size={18} className="text-blue-500" />
                     <span>Dark Mode</span>
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <h3 className="text-lg font-medium mb-2">Default Section</h3>
-                  <Select defaultValue="overview">
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select default section" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="overview">Overview</SelectItem>
-                      <SelectItem value="charts">Charts</SelectItem>
-                      <SelectItem value="news">News Feed</SelectItem>
-                      <SelectItem value="tokens">Token Prices</SelectItem>
-                      <SelectItem value="watchlist">Watchlist</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="pt-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span>Show News Feed</span>
-                    <Switch id="show-news" defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Show Token Prices</span>
-                    <Switch id="show-tokens" defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Show Watchlist</span>
-                    <Switch id="show-watchlist" defaultChecked />
                   </div>
                 </div>
               </div>
@@ -188,7 +156,7 @@ const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
           <Button
             variant="default"
             onClick={() => onOpenChange?.(false)}
-            className="bg-primary text-primary-content"
+            className="bg-primary text-white dark:text-black hover:bg-primary/90"
           >
             Save Changes
           </Button>

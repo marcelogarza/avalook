@@ -9,12 +9,13 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-content shadow hover:bg-primary/90",
-        destructive: "bg-error text-error-content shadow-sm hover:bg-error/90",
+        default:
+          "bg-primary text-white dark:text-black shadow hover:bg-primary/90",
+        destructive: "bg-error text-white shadow-sm hover:bg-error/90",
         outline:
           "border border-base-300 bg-base-100 shadow-sm hover:bg-base-200 text-base-content",
         secondary:
-          "bg-secondary text-secondary-content shadow-sm hover:bg-secondary/80",
+          "bg-secondary text-white dark:text-black shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-base-200 text-base-content",
         link: "text-primary underline-offset-4 hover:underline",
       },
@@ -52,4 +53,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "Button";
 
-export { Button, buttonVariants }
+export { Button, buttonVariants };
