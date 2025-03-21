@@ -2,7 +2,7 @@
 
 import { createWeb3Modal, defaultConfig } from "@web3modal/ethers5/react";
 import { ReactNode, useEffect, useState } from "react";
-import { getCurrentTheme } from "@/lib/theme";
+import { getCurrentTheme } from "../lib/theme";
 
 // IMPORTANT: Using the provided projectId, but you should get your own from WalletConnect Cloud
 // Go to: https://cloud.walletconnect.com/ to get one
