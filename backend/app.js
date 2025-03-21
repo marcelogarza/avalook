@@ -21,7 +21,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Backend server is running");
 });
-
+//hi
 // API endpoint to get AVAX price from CoinGecko
 app.get("/api/avax-price", async (req, res) => {
   try {
