@@ -7,6 +7,7 @@ import {
   TrendingUp,
   DollarSign,
   BarChart2,
+  RefreshCw,
 } from "lucide-react";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -22,105 +23,124 @@ interface TokenData {
 }
 
 interface TokenPriceSectionProps {
-  tokens?: TokenData[];
   title?: string;
 }
 
 const TokenPriceSection = ({
-  tokens: initialTokens = [
-    {
-      name: "Avalanche",
-      symbol: "AVAX",
-      price: 0,
-      change24h: 0,
-      marketCap: "$9.2B",
-      volume24h: "$342M",
-      chart: [0, 0, 0, 0, 0, 0, 0],
-    },
-    {
-      name: "Trader Joe",
-      symbol: "JOE",
-      price: 0.65,
-      change24h: -1.8,
-      marketCap: "$215M",
-      volume24h: "$42M",
-      chart: [0.68, 0.72, 0.69, 0.67, 0.64, 0.63, 0.65],
-    },
-    {
-      name: "Pangolin",
-      symbol: "PNG",
-      price: 0.12,
-      change24h: 5.4,
-      marketCap: "$98M",
-      volume24h: "$12M",
-      chart: [0.1, 0.09, 0.11, 0.13, 0.12, 0.11, 0.12],
-    },
-    {
-      name: "Benqi",
-      symbol: "QI",
-      price: 0.023,
-      change24h: 1.2,
-      marketCap: "$76M",
-      volume24h: "$8M",
-      chart: [0.021, 0.022, 0.024, 0.023, 0.022, 0.023, 0.023],
-    },
-  ],
   title = "Token Prices",
 }: TokenPriceSectionProps) => {
-  const [tokens, setTokens] = useState(initialTokens);
+  const [tokens, setTokens] = useState<TokenData[]>([]);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [priceHistory, setPriceHistory] = useState<number[]>([]);
 
-  const fetchAvaxPrice = async () => {
+  const fetchTokenPrices = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:5001/api/avax-price");
-      const avaxPrice = response.data["avalanche-2"].usd;
-
-      // Update price history
-      setPriceHistory((prev) => [...prev, avaxPrice].slice(-7));
-
-      // Calculate change if we have price history
-      let change24h = 0;
-      if (priceHistory.length > 0) {
-        const previousPrice = priceHistory[priceHistory.length - 1];
-        change24h = ((avaxPrice - previousPrice) / previousPrice) * 100;
-      }
-
-      // Update only the AVAX token in the tokens array
-      setTokens((prevTokens) =>
-        prevTokens.map((token) =>
-          token.symbol === "AVAX"
-            ? {
-                ...token,
-                price: avaxPrice,
-                change24h: Number(change24h.toFixed(2)),
-                // Add current price to chart history (limited to 7 points)
-                chart: [
-                  ...(token.chart.some((val) => val > 0)
-                    ? token.chart.slice(-6)
-                    : []),
-                  avaxPrice,
-                ],
-              }
-            : token
-        )
+      const response = await axios.get(
+        "http://localhost:5001/api/token-prices"
       );
+
+      if (response.data) {
+        const tokenData: TokenData[] = [
+          {
+            name: "Avalanche",
+            symbol: "AVAX",
+            price: response.data["avalanche-2"].usd,
+            change24h: response.data["avalanche-2"].usd_24h_change,
+            marketCap: `$${(
+              response.data["avalanche-2"].usd_market_cap / 1e9
+            ).toFixed(2)}B`,
+            volume24h: `$${(
+              response.data["avalanche-2"].usd_24h_vol / 1e6
+            ).toFixed(0)}M`,
+            chart: [22, 19, 21, 24, 20, 25, response.data["avalanche-2"].usd],
+          },
+          {
+            name: "Trader Joe",
+            symbol: "JOE",
+            price: response.data["joe"].usd,
+            change24h: response.data["joe"].usd_24h_change,
+            marketCap: `$${(response.data["joe"].usd_market_cap / 1e6).toFixed(
+              0
+            )}M`,
+            volume24h: `$${(response.data["joe"].usd_24h_vol / 1e6).toFixed(
+              0
+            )}M`,
+            chart: [
+              0.68,
+              0.72,
+              0.69,
+              0.67,
+              0.64,
+              0.63,
+              response.data["joe"].usd,
+            ],
+          },
+          {
+            name: "Pangolin",
+            symbol: "PNG",
+            price: response.data["pangolin"].usd,
+            change24h: response.data["pangolin"].usd_24h_change,
+            marketCap: `$${(
+              response.data["pangolin"].usd_market_cap / 1e6
+            ).toFixed(0)}M`,
+            volume24h: `$${(
+              response.data["pangolin"].usd_24h_vol / 1e6
+            ).toFixed(0)}M`,
+            chart: [
+              0.1,
+              0.09,
+              0.11,
+              0.13,
+              0.12,
+              0.11,
+              response.data["pangolin"].usd,
+            ],
+          },
+          {
+            name: "Benqi",
+            symbol: "QI",
+            price: response.data["benqi"].usd,
+            change24h: response.data["benqi"].usd_24h_change,
+            marketCap: `$${(
+              response.data["benqi"].usd_market_cap / 1e6
+            ).toFixed(0)}M`,
+            volume24h: `$${(response.data["benqi"].usd_24h_vol / 1e6).toFixed(
+              0
+            )}M`,
+            chart: [
+              0.021,
+              0.022,
+              0.024,
+              0.023,
+              0.022,
+              0.023,
+              response.data["benqi"].usd,
+            ],
+          },
+        ];
+
+        setTokens(tokenData);
+        setLastUpdated(new Date());
+      }
     } catch (error) {
-      console.error("Error fetching AVAX price:", error);
+      console.error("Error fetching token prices:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleRefresh = () => {
+    fetchTokenPrices();
+  };
+
   useEffect(() => {
-    // Fetch data immediately on component mount
-    fetchAvaxPrice();
+    // Fetch data on component mount
+    fetchTokenPrices();
 
-    // Set up a timer to fetch data every minute
-    const intervalId = setInterval(fetchAvaxPrice, 60000);
+    // Set up auto-refresh every 2 minutes
+    const intervalId = setInterval(fetchTokenPrices, 120000);
 
-    // Clean up interval on component unmount
     return () => clearInterval(intervalId);
   }, []);
 
@@ -130,14 +150,30 @@ const TokenPriceSection = ({
         <CardTitle className="text-xl font-bold text-base-content">
           {title}
         </CardTitle>
-        <Tabs defaultValue="all">
-          <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="defi">DeFi</TabsTrigger>
-            <TabsTrigger value="gaming">Gaming</TabsTrigger>
-            <TabsTrigger value="infrastructure">Infrastructure</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center space-x-2">
+          {lastUpdated && (
+            <p className="text-xs text-base-content/60">
+              Updated: {lastUpdated.toLocaleTimeString()}
+            </p>
+          )}
+          <button
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="text-base-content/70 hover:text-primary disabled:opacity-50"
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
+          </button>
+          <Tabs defaultValue="all">
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="defi">DeFi</TabsTrigger>
+              <TabsTrigger value="gaming">Gaming</TabsTrigger>
+              <TabsTrigger value="infrastructure">Infrastructure</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4 max-h-[280px] overflow-y-auto pr-2">
@@ -163,9 +199,8 @@ const TokenPriceSection = ({
                   {/* Simple sparkline chart */}
                   <div className="flex items-end h-8 space-x-1">
                     {token.chart.map((value, i) => {
-                      const height = `${
-                        (value / Math.max(...token.chart)) * 100
-                      }%`;
+                      const max = Math.max(...token.chart.filter((v) => v > 0));
+                      const height = max > 0 ? `${(value / max) * 100}%` : "0%";
                       return (
                         <div
                           key={i}
@@ -182,7 +217,7 @@ const TokenPriceSection = ({
 
               <div className="text-right">
                 <div className="font-medium text-base-content">
-                  {token.symbol === "AVAX" && isLoading
+                  {isLoading
                     ? "Loading..."
                     : `$${token.price.toFixed(token.price < 1 ? 4 : 2)}`}
                 </div>
@@ -196,7 +231,7 @@ const TokenPriceSection = ({
                   ) : (
                     <ArrowDown className="w-3 h-3 mr-1" />
                   )}
-                  {Math.abs(token.change24h)}%
+                  {Math.abs(token.change24h).toFixed(2)}%
                 </div>
               </div>
             </div>
