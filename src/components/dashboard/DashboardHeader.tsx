@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Search,
   Settings,
@@ -25,6 +25,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { useWeb3Modal } from "@web3modal/ethers5/react";
+import HelpContactModal from "./HelpContactModal";
 
 interface DashboardHeaderProps {
   onSettingsClick?: () => void;
@@ -40,10 +41,10 @@ const DashboardHeader = ({
   className = "",
 }: DashboardHeaderProps) => {
   const { open } = useWeb3Modal();
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
 
   const handleHelpClick = () => {
-    // Handle help click - could open documentation or a help modal
-    console.log("Help clicked");
+    setHelpModalOpen(true);
   };
 
   const handleManageWallet = () => {
@@ -160,6 +161,9 @@ const DashboardHeader = ({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Help Contact Modal */}
+      <HelpContactModal open={helpModalOpen} onOpenChange={setHelpModalOpen} />
     </header>
   );
 };

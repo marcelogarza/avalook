@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   Activity,
-  Database,
-  Users,
-  Clock,
-  RefreshCw,
-  DollarSign,
   BarChart2,
+  DollarSign,
+  RefreshCw,
+  CircleDollarSign,
+  Wallet,
+  BadgePercent,
 } from "lucide-react";
 import axios from "axios";
 
@@ -42,7 +42,7 @@ const OverviewCard = ({
             </span>
           )}
         </CardTitle>
-        <div className="h-8 w-8 p-1.5 rounded-full bg-primary/10 text-primary">
+        <div className="h-8 w-8 flex items-center justify-center rounded-full bg-base-200 text-primary">
           {icon}
         </div>
       </CardHeader>
@@ -67,33 +67,11 @@ const OverviewCard = ({
 };
 
 const OverviewSection = () => {
-  const [avaxPrice, setAvaxPrice] = useState<{
-    value: string;
-    change: { value: string; isPositive: boolean };
-  }>({
-    value: "$0.00",
-    change: { value: "0.0%", isPositive: true },
-  });
-
   const [tps, setTps] = useState<{
     value: string;
     change?: { value: string; isPositive: boolean };
   }>({
     value: "0",
-  });
-
-  const [validators, setValidators] = useState<{
-    value: string;
-    change?: { value: string; isPositive: boolean };
-  }>({
-    value: "0",
-  });
-
-  const [blockTime, setBlockTime] = useState<{
-    value: string;
-    change?: { value: string; isPositive: boolean };
-  }>({
-    value: "0s",
   });
 
   const [marketCap, setMarketCap] = useState<{
@@ -103,20 +81,33 @@ const OverviewSection = () => {
     value: "$0",
   });
 
-  const [tvl, setTVL] = useState<{
+  const [transactionsVolume, setTransactionsVolume] = useState<{
+    value: string;
+    change?: { value: string; isPositive: boolean };
+  }>({
+    value: "0",
+  });
+
+  const [gasFees, setGasFees] = useState<{
     value: string;
     change?: { value: string; isPositive: boolean };
   }>({
     value: "$0",
   });
 
+  const [activeAddresses, setActiveAddresses] = useState<{
+    value: string;
+    change?: { value: string; isPositive: boolean };
+  }>({
+    value: "0",
+  });
+
   const [loading, setLoading] = useState({
-    avaxPrice: true,
     tps: true,
-    validators: true,
-    blockTime: true,
     marketCap: true,
-    tvl: true,
+    transactionsVolume: true,
+    gasFees: true,
+    activeAddresses: true,
   });
 
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -138,25 +129,29 @@ const OverviewSection = () => {
     }
   };
 
+  const formatNumber = (value: number): string => {
+    if (value >= 1e9) {
+      return `${(value / 1e9).toFixed(2)}B`;
+    } else if (value >= 1e6) {
+      return `${(value / 1e6).toFixed(2)}M`;
+    } else if (value >= 1e3) {
+      return `${(value / 1e3).toFixed(2)}K`;
+    } else {
+      return value.toFixed(0);
+    }
+  };
+
   const fetchNetworkData = async () => {
     setRefreshing(true);
     try {
-      // Fetch AVAX price
+      // Fetch market data
       const priceResponse = await axios.get(
         "http://localhost:5001/api/token-prices"
       );
       const avaxData = priceResponse.data["avalanche-2"];
 
       if (avaxData) {
-        setAvaxPrice({
-          value: `$${avaxData.usd.toFixed(2)}`,
-          change: {
-            value: `${Math.abs(avaxData.usd_24h_change).toFixed(2)}%`,
-            isPositive: avaxData.usd_24h_change >= 0,
-          },
-        });
-
-        // Set market cap from the same data
+        // Set market cap
         setMarketCap({
           value: formatCurrency(avaxData.usd_market_cap),
           change: {
@@ -166,7 +161,7 @@ const OverviewSection = () => {
         });
       }
 
-      setLoading((prev) => ({ ...prev, avaxPrice: false, marketCap: false }));
+      setLoading((prev) => ({ ...prev, marketCap: false }));
 
       // Fetch TPS
       const tpsResponse = await axios.get("http://localhost:5001/api/tps");
@@ -181,32 +176,35 @@ const OverviewSection = () => {
       }
       setLoading((prev) => ({ ...prev, tps: false }));
 
-      // Fetch Validators
-      const validatorsResponse = await axios.get(
-        "http://localhost:5001/api/validators"
-      );
-      if (validatorsResponse.data) {
-        setValidators({
-          value: validatorsResponse.data.count.toLocaleString(),
-        });
-      }
-      setLoading((prev) => ({ ...prev, validators: false }));
-
-      // Set block time (mocked for now)
-      setBlockTime({
-        value: "2.3s",
-      });
-      setLoading((prev) => ({ ...prev, blockTime: false }));
-
-      // Set TVL (mocked for now, would come from DeFi Llama API in production)
-      setTVL({
-        value: "$2.1B",
+      // Mock transaction volume data (in production this would be from a real API)
+      setTransactionsVolume({
+        value: "1.2M",
         change: {
-          value: "1.2%",
+          value: "5.2%",
           isPositive: true,
         },
       });
-      setLoading((prev) => ({ ...prev, tvl: false }));
+      setLoading((prev) => ({ ...prev, transactionsVolume: false }));
+
+      // Mock gas fees data
+      setGasFees({
+        value: "$0.05",
+        change: {
+          value: "2.1%",
+          isPositive: false,
+        },
+      });
+      setLoading((prev) => ({ ...prev, gasFees: false }));
+
+      // Mock active addresses data
+      setActiveAddresses({
+        value: "125.4K",
+        change: {
+          value: "3.7%",
+          isPositive: true,
+        },
+      });
+      setLoading((prev) => ({ ...prev, activeAddresses: false }));
 
       setLastUpdated(new Date());
     } catch (error) {
@@ -239,12 +237,12 @@ const OverviewSection = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <OverviewCard
-          title="AVAX Price"
-          value={avaxPrice.value}
-          change={avaxPrice.change}
-          icon={<DollarSign className="h-4 w-4" />}
-          isLoading={loading.avaxPrice}
-          tooltip="Current AVAX token price from CoinGecko"
+          title="TPS"
+          value={tps.value}
+          change={tps.change}
+          icon={<Activity className="h-4 w-4" />}
+          isLoading={loading.tps}
+          tooltip="Transactions per second on the Avalanche network"
         />
         <OverviewCard
           title="Market Cap"
@@ -255,34 +253,28 @@ const OverviewSection = () => {
           tooltip="Total market capitalization of AVAX tokens"
         />
         <OverviewCard
-          title="TPS"
-          value={tps.value}
-          change={tps.change}
-          icon={<Activity className="h-4 w-4" />}
-          isLoading={loading.tps}
-          tooltip="Transactions per second on the network"
+          title="Transactions Volume"
+          value={transactionsVolume.value}
+          change={transactionsVolume.change}
+          icon={<CircleDollarSign className="h-4 w-4" />}
+          isLoading={loading.transactionsVolume}
+          tooltip="Total number of transactions on the network"
         />
         <OverviewCard
-          title="Active Validators"
-          value={validators.value}
-          icon={<Users className="h-4 w-4" />}
-          isLoading={loading.validators}
-          tooltip="Number of active validators securing the network"
+          title="Gas Fees"
+          value={gasFees.value}
+          change={gasFees.change}
+          icon={<BadgePercent className="h-4 w-4" />}
+          isLoading={loading.gasFees}
+          tooltip="Average gas fee for transactions"
         />
         <OverviewCard
-          title="Block Time"
-          value={blockTime.value}
-          icon={<Clock className="h-4 w-4" />}
-          isLoading={loading.blockTime}
-          tooltip="Average time between blocks"
-        />
-        <OverviewCard
-          title="Total Value Locked"
-          value={tvl.value}
-          change={tvl.change}
-          icon={<Database className="h-4 w-4" />}
-          isLoading={loading.tvl}
-          tooltip="Total value locked in DeFi protocols on Avalanche"
+          title="Active Addresses"
+          value={activeAddresses.value}
+          change={activeAddresses.change}
+          icon={<Wallet className="h-4 w-4" />}
+          isLoading={loading.activeAddresses}
+          tooltip="Number of unique active addresses on the network"
         />
       </div>
     </section>
