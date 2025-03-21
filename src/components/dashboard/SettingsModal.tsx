@@ -188,7 +188,7 @@ const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
           <Button
             variant="default"
             onClick={() => onOpenChange?.(false)}
-            className="bg-primary text-primary-content"
+            className="bg-primary text-white dark:text-black hover:bg-primary/90"
           >
             Save Changes
           </Button>
