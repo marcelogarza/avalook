@@ -7,7 +7,6 @@ import {
   TrendingUp,
   DollarSign,
   BarChart2,
-  RefreshCw,
 } from "lucide-react";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -145,7 +144,10 @@ const TokenPriceSection = ({
   }, []);
 
   return (
-    <Card className="w-full h-full bg-base-100 border border-base-300">
+    <Card
+      className="w-full h-full bg-base-100 border border-base-300 flex flex-col"
+      style={{ minHeight: "500px" }}
+    >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-xl font-bold text-base-content">
           {title}
@@ -156,15 +158,6 @@ const TokenPriceSection = ({
               Updated: {lastUpdated.toLocaleTimeString()}
             </p>
           )}
-          <button
-            onClick={handleRefresh}
-            disabled={isLoading}
-            className="text-base-content/70 hover:text-primary disabled:opacity-50"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />
-          </button>
           <Tabs defaultValue="all">
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
@@ -175,70 +168,81 @@ const TokenPriceSection = ({
           </Tabs>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4 max-h-[280px] overflow-y-auto pr-2">
-          {tokens.map((token, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-content font-bold">
-                  {token.symbol.charAt(0)}
+      <CardContent className="flex-grow flex flex-col">
+        <div className="space-y-4 overflow-y-auto flex-grow">
+          {tokens.length > 0 ? (
+            tokens.map((token, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-content font-bold">
+                    {token.symbol.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-base-content">
+                      {token.name}
+                    </h3>
+                    <p className="text-sm text-base-content/60">
+                      {token.symbol}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-medium text-base-content">
-                    {token.name}
-                  </h3>
-                  <p className="text-sm text-base-content/60">{token.symbol}</p>
-                </div>
-              </div>
 
-              <div className="flex-1 mx-4 hidden md:block">
-                <div className="h-10 flex items-center">
-                  {/* Simple sparkline chart */}
-                  <div className="flex items-end h-8 space-x-1">
-                    {token.chart.map((value, i) => {
-                      const max = Math.max(...token.chart.filter((v) => v > 0));
-                      const height = max > 0 ? `${(value / max) * 100}%` : "0%";
-                      return (
-                        <div
-                          key={i}
-                          className={`w-1 ${
-                            token.change24h >= 0 ? "bg-success" : "bg-error"
-                          } rounded-t-sm`}
-                          style={{ height }}
-                        />
-                      );
-                    })}
+                <div className="flex-1 mx-4 hidden md:block">
+                  <div className="h-10 flex items-center">
+                    {/* Simple sparkline chart */}
+                    <div className="flex items-end h-8 space-x-1">
+                      {token.chart.map((value, i) => {
+                        const max = Math.max(
+                          ...token.chart.filter((v) => v > 0)
+                        );
+                        const height =
+                          max > 0 ? `${(value / max) * 100}%` : "0%";
+                        return (
+                          <div
+                            key={i}
+                            className={`w-1 ${
+                              token.change24h >= 0 ? "bg-success" : "bg-error"
+                            } rounded-t-sm`}
+                            style={{ height }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className="font-medium text-base-content">
+                    {isLoading
+                      ? "Loading..."
+                      : `$${token.price.toFixed(token.price < 1 ? 4 : 2)}`}
+                  </div>
+                  <div
+                    className={`text-sm flex items-center justify-end ${
+                      token.change24h >= 0 ? "text-success" : "text-error"
+                    }`}
+                  >
+                    {token.change24h >= 0 ? (
+                      <ArrowUp className="w-3 h-3 mr-1" />
+                    ) : (
+                      <ArrowDown className="w-3 h-3 mr-1" />
+                    )}
+                    {Math.abs(token.change24h).toFixed(2)}%
                   </div>
                 </div>
               </div>
-
-              <div className="text-right">
-                <div className="font-medium text-base-content">
-                  {isLoading
-                    ? "Loading..."
-                    : `$${token.price.toFixed(token.price < 1 ? 4 : 2)}`}
-                </div>
-                <div
-                  className={`text-sm flex items-center justify-end ${
-                    token.change24h >= 0 ? "text-success" : "text-error"
-                  }`}
-                >
-                  {token.change24h >= 0 ? (
-                    <ArrowUp className="w-3 h-3 mr-1" />
-                  ) : (
-                    <ArrowDown className="w-3 h-3 mr-1" />
-                  )}
-                  {Math.abs(token.change24h).toFixed(2)}%
-                </div>
-              </div>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full py-10 text-base-content/70">
+              <p className="text-center">No token price data available</p>
             </div>
-          ))}
+          )}
         </div>
 
-        <div className="mt-4 pt-4 border-t border-base-300">
+        <div className="border-t border-base-300 mt-4">
           <Link to="/tokens" className="block w-full">
             <button className="w-full h-10 py-2 text-center text-sm text-primary hover:text-primary-focus font-medium">
               View All Tokens
