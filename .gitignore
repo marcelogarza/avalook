@@ -33,3 +33,5 @@ core
 .github/
 
 node_modules
+backend/.env
+.env
