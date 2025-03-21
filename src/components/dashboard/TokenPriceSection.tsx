@@ -9,6 +9,7 @@ import {
   BarChart2,
 } from "lucide-react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 interface TokenData {
   name: string;
@@ -139,7 +140,7 @@ const TokenPriceSection = ({
         </Tabs>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[280px] overflow-y-auto pr-2">
           {tokens.map((token, index) => (
             <div
               key={index}
@@ -203,9 +204,11 @@ const TokenPriceSection = ({
         </div>
 
         <div className="mt-4 pt-4 border-t border-base-300">
-          <button className="w-full text-center text-sm text-primary hover:text-primary-focus font-medium">
-            View All Tokens
-          </button>
+          <Link to="/tokens" className="block w-full">
+            <button className="w-full h-10 py-2 text-center text-sm text-primary hover:text-primary-focus font-medium">
+              View All Tokens
+            </button>
+          </Link>
         </div>
       </CardContent>
     </Card>
