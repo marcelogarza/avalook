@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
@@ -8,6 +8,7 @@ import {
   DollarSign,
   BarChart2,
 } from "lucide-react";
+import axios from "axios";
 
 interface TokenData {
   name: string;
@@ -25,15 +26,15 @@ interface TokenPriceSectionProps {
 }
 
 const TokenPriceSection = ({
-  tokens = [
+  tokens: initialTokens = [
     {
       name: "Avalanche",
       symbol: "AVAX",
-      price: 28.45,
-      change24h: 3.2,
+      price: 0,
+      change24h: 0,
       marketCap: "$9.2B",
       volume24h: "$342M",
-      chart: [22, 19, 21, 24, 20, 25, 28],
+      chart: [0, 0, 0, 0, 0, 0, 0],
     },
     {
       name: "Trader Joe",
@@ -65,6 +66,63 @@ const TokenPriceSection = ({
   ],
   title = "Token Prices",
 }: TokenPriceSectionProps) => {
+  const [tokens, setTokens] = useState(initialTokens);
+  const [isLoading, setIsLoading] = useState(true);
+  const [priceHistory, setPriceHistory] = useState<number[]>([]);
+
+  const fetchAvaxPrice = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get("http://localhost:5001/api/avax-price");
+      const avaxPrice = response.data["avalanche-2"].usd;
+
+      // Update price history
+      setPriceHistory((prev) => [...prev, avaxPrice].slice(-7));
+
+      // Calculate change if we have price history
+      let change24h = 0;
+      if (priceHistory.length > 0) {
+        const previousPrice = priceHistory[priceHistory.length - 1];
+        change24h = ((avaxPrice - previousPrice) / previousPrice) * 100;
+      }
+
+      // Update only the AVAX token in the tokens array
+      setTokens((prevTokens) =>
+        prevTokens.map((token) =>
+          token.symbol === "AVAX"
+            ? {
+                ...token,
+                price: avaxPrice,
+                change24h: Number(change24h.toFixed(2)),
+                // Add current price to chart history (limited to 7 points)
+                chart: [
+                  ...(token.chart.some((val) => val > 0)
+                    ? token.chart.slice(-6)
+                    : []),
+                  avaxPrice,
+                ],
+              }
+            : token
+        )
+      );
+    } catch (error) {
+      console.error("Error fetching AVAX price:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch data immediately on component mount
+    fetchAvaxPrice();
+
+    // Set up a timer to fetch data every minute
+    const intervalId = setInterval(fetchAvaxPrice, 60000);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <Card className="w-full h-full bg-base-100 border border-base-300">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -123,7 +181,9 @@ const TokenPriceSection = ({
 
               <div className="text-right">
                 <div className="font-medium text-base-content">
-                  ${token.price.toFixed(token.price < 1 ? 4 : 2)}
+                  {token.symbol === "AVAX" && isLoading
+                    ? "Loading..."
+                    : `$${token.price.toFixed(token.price < 1 ? 4 : 2)}`}
                 </div>
                 <div
                   className={`text-sm flex items-center justify-end ${
