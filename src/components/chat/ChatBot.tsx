@@ -2,9 +2,21 @@ import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send } from "lucide-react";
 import ChatMessage from "./ChatMessage";
 import { useChatMessages } from "../../hooks/useChatMessages";
+import axios from "axios";
 
 interface ChatBotProps {
   title?: string;
+}
+
+interface DashboardContext {
+  tokenPrices?: Record<string, any>;
+  networkStats?: {
+    tps?: { value: number };
+    gas?: { value: string };
+    volume?: { value: string };
+    activeUsers?: { value: number };
+  };
+  news?: Array<{ title: string }>;
 }
 
 const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
@@ -14,6 +26,7 @@ const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { messages, addMessage } = useChatMessages();
+  const [dashboardContext, setDashboardContext] = useState<DashboardContext>({});
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
@@ -21,6 +34,42 @@ const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
       setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
+    }
+  };
+
+  // Fetch dashboard context data (token prices, network stats)
+  const fetchDashboardContext = async () => {
+    try {
+      // Use the new combined endpoint to fetch all data at once
+      const response = await axios.get("http://localhost:5001/api/avalanche/dashboard-data");
+      const data = response.data;
+      
+      console.log("Raw dashboard data:", data);
+      
+      // Format the data for the chatbot context
+      setDashboardContext({
+        tokenPrices: data.tokenPrices,
+        networkStats: {
+          tps: data.tps || { value: 0 },
+          gas: data.gas || { value: "0" },
+          volume: data.volume || { value: "0" },
+          activeUsers: data.activeUsers || { value: 0 }
+        },
+        news: data.news?.results
+      });
+      
+      console.log("Dashboard data formatted for chatbot context:", {
+        tokenPrices: !!data.tokenPrices,
+        networkStats: {
+          tps: !!data.tps,
+          gas: !!data.gas,
+          volume: !!data.volume,
+          activeUsers: !!data.activeUsers
+        },
+        news: !!data.news?.results
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard context:", error);
     }
   };
 
@@ -44,7 +93,9 @@ const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: message
+          message: message,
+          messageHistory: messages,
+          context: dashboardContext
         }),
       });
 
@@ -74,6 +125,13 @@ const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // Fetch dashboard context when chat is opened
+  useEffect(() => {
+    if (isOpen) {
+      fetchDashboardContext();
+    }
+  }, [isOpen]);
 
   // Welcome message when chat is first opened
   useEffect(() => {
