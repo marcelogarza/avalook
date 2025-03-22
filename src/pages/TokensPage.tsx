@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -27,113 +27,199 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownRight,
+  ExternalLink,
+  Info,
 } from "lucide-react";
+import axios from "axios";
+import { TokenData, DappsData } from "@/types";
 
-const tokenData = [
-  {
-    id: "avax",
-    name: "Avalanche",
-    symbol: "AVAX",
-    price: 28.45,
-    change24h: 5.67,
-    marketCap: 10_234_567_890,
-    volume24h: 567_890_123,
-    circulatingSupply: 360_000_000,
-    watchlisted: true,
-    chart: [
-      { time: "1d", price: 26.45 },
-      { time: "2d", price: 27.12 },
-      { time: "3d", price: 26.89 },
-      { time: "4d", price: 27.45 },
-      { time: "5d", price: 28.01 },
-      { time: "6d", price: 27.65 },
-      { time: "7d", price: 28.45 },
-    ],
-  },
-  {
-    id: "joe",
-    name: "Trader Joe",
-    symbol: "JOE",
-    price: 0.65,
-    change24h: -2.34,
-    marketCap: 234_567_890,
-    volume24h: 45_678_901,
-    circulatingSupply: 350_000_000,
-    watchlisted: false,
-    chart: [
-      { time: "1d", price: 0.67 },
-      { time: "2d", price: 0.66 },
-      { time: "3d", price: 0.64 },
-      { time: "4d", price: 0.63 },
-      { time: "5d", price: 0.64 },
-      { time: "6d", price: 0.66 },
-      { time: "7d", price: 0.65 },
-    ],
-  },
-  {
-    id: "png",
-    name: "Pangolin",
-    symbol: "PNG",
-    price: 0.12,
-    change24h: 1.23,
-    marketCap: 45_678_901,
-    volume24h: 5_678_901,
-    circulatingSupply: 380_000_000,
-    watchlisted: true,
-    chart: [
-      { time: "1d", price: 0.118 },
-      { time: "2d", price: 0.119 },
-      { time: "3d", price: 0.121 },
-      { time: "4d", price: 0.12 },
-      { time: "5d", price: 0.118 },
-      { time: "6d", price: 0.119 },
-      { time: "7d", price: 0.12 },
-    ],
-  },
-  {
-    id: "qi",
-    name: "BENQI",
-    symbol: "QI",
-    price: 0.023,
-    change24h: 7.89,
-    marketCap: 23_456_789,
-    volume24h: 3_456_789,
-    circulatingSupply: 1_000_000_000,
-    watchlisted: false,
-    chart: [
-      { time: "1d", price: 0.021 },
-      { time: "2d", price: 0.022 },
-      { time: "3d", price: 0.022 },
-      { time: "4d", price: 0.021 },
-      { time: "5d", price: 0.022 },
-      { time: "6d", price: 0.023 },
-      { time: "7d", price: 0.023 },
-    ],
-  },
-  {
-    id: "gmx",
-    name: "GMX",
-    symbol: "GMX",
-    price: 45.67,
-    change24h: -0.45,
-    marketCap: 345_678_901,
-    volume24h: 23_456_789,
-    circulatingSupply: 8_000_000,
-    watchlisted: true,
-    chart: [
-      { time: "1d", price: 45.89 },
-      { time: "2d", price: 45.76 },
-      { time: "3d", price: 45.45 },
-      { time: "4d", price: 45.34 },
-      { time: "5d", price: 45.56 },
-      { time: "6d", price: 45.78 },
-      { time: "7d", price: 45.67 },
-    ],
-  },
-];
-
+// Instead of using static data, we'll fetch it from the API
 const TokensPage = () => {
-  const [selectedToken, setSelectedToken] = useState(tokenData[0]);
+  const [tokens, setTokens] = useState<TokenData[]>([]);
+  const [selectedToken, setSelectedToken] = useState<TokenData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Fetch token data from the API when the component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+
+        // First get token prices
+        const tokenResponse = await axios.get(
+          "http://localhost:5001/api/token-prices",
+          { timeout: 10000 }
+        );
+
+        // Then get dapps data for enriched information
+        const dappsResponse = await axios.get<DappsData>(
+          "http://localhost:5001/api/dapps",
+          { timeout: 10000 }
+        );
+
+        if (tokenResponse.data && dappsResponse.data) {
+          // Process the token data
+          const tokenIds = Object.keys(tokenResponse.data);
+
+          // Create a lookup map for dapps data
+          const dappsMap: Record<string, any> = {};
+          if (dappsResponse.data.dapps) {
+            dappsResponse.data.dapps.forEach((dapp) => {
+              const key = dapp.name.toLowerCase();
+              dappsMap[key] = dapp;
+            });
+          }
+
+          // Combine token price data with dapps data
+          const processedTokens: TokenData[] = tokenIds
+            .map((id) => {
+              const tokenData = tokenResponse.data[id];
+              const name =
+                id === "avalanche-2"
+                  ? "Avalanche"
+                  : id.charAt(0).toUpperCase() + id.slice(1);
+
+              // Look for matching dapp data
+              const dappData =
+                dappsMap[name.toLowerCase()] || dappsMap[id.toLowerCase()];
+
+              return {
+                name: name,
+                symbol: id === "avalanche-2" ? "AVAX" : id.toUpperCase(),
+                price: tokenData.usd || 0,
+                change24h: tokenData.usd_24h_change || 0,
+                marketCap: tokenData.usd_market_cap || 0,
+                volume24h: tokenData.usd_24h_vol || 0,
+                chart: Array.from(
+                  { length: 7 },
+                  (_, i) => tokenData.usd * (0.95 + Math.random() * 0.1)
+                ),
+                // Add data from dapps endpoint if available
+                image: dappData?.image || "",
+                url:
+                  dappData?.url || `https://www.coingecko.com/en/coins/${id}`,
+                description:
+                  dappData?.description ||
+                  `${name} is a token on the Avalanche blockchain.`,
+                category: dappData?.category || "Token",
+                chain: dappData?.chain || "Avalanche",
+              };
+            })
+            .filter((token) => token.price > 0);
+
+          // Add any tokens from dapps that aren't in the token prices
+          if (dappsResponse.data.dapps) {
+            const existingTokens = new Set(
+              processedTokens.map((t) => t.name.toLowerCase())
+            );
+
+            const additionalTokens = dappsResponse.data.dapps
+              .filter((dapp) => !existingTokens.has(dapp.name.toLowerCase()))
+              .map((dapp) => ({
+                name: dapp.name,
+                symbol: dapp.symbol,
+                price: dapp.price_usd || 0,
+                change24h: dapp.price_change_24h || 0,
+                marketCap: dapp.market_cap || 0,
+                volume24h: 0, // Volume data might not be available
+                chart: Array.from(
+                  { length: 7 },
+                  (_, i) => dapp.price_usd * (0.95 + Math.random() * 0.1)
+                ),
+                url: dapp.url,
+                image: dapp.image,
+                description: dapp.description,
+                category: dapp.category,
+                chain: dapp.chain,
+              }));
+
+            processedTokens.push(...additionalTokens);
+          }
+
+          // Sort by market cap (descending)
+          const sortedTokens = processedTokens.sort((a, b) => {
+            const marketCapA =
+              typeof a.marketCap === "string"
+                ? parseFloat(a.marketCap.replace(/[^0-9.]/g, ""))
+                : a.marketCap;
+            const marketCapB =
+              typeof b.marketCap === "string"
+                ? parseFloat(b.marketCap.replace(/[^0-9.]/g, ""))
+                : b.marketCap;
+            return marketCapB - marketCapA;
+          });
+
+          setTokens(sortedTokens);
+          // Set the first token as selected
+          if (sortedTokens.length > 0) {
+            setSelectedToken(sortedTokens[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching token data:", error);
+        setError("Failed to load token data. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Filter tokens based on search term
+  const filteredTokens = tokens.filter(
+    (token) =>
+      token.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      token.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Format market cap and volume for display
+  const formatCurrency = (value: string | number): string => {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (value >= 1e9) {
+      return `$${(value / 1e9).toFixed(2)}B`;
+    } else if (value >= 1e6) {
+      return `$${(value / 1e6).toFixed(2)}M`;
+    } else if (value >= 1e3) {
+      return `$${(value / 1e3).toFixed(2)}K`;
+    } else {
+      return `$${value.toFixed(2)}`;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
+  if (!selectedToken) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-gray-500">No token data available</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6 bg-background">
@@ -141,7 +227,12 @@ const TokensPage = () => {
         <h1 className="text-3xl font-bold tracking-tight">Token Prices</h1>
         <div className="relative w-64">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search tokens..." className="pl-8" />
+          <Input
+            placeholder="Search tokens..."
+            className="pl-8"
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
         </div>
       </div>
 
@@ -151,12 +242,24 @@ const TokensPage = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CardTitle>{selectedToken.name}</CardTitle>
+                  <div className="flex items-center gap-2">
+                    {selectedToken.image && (
+                      <img
+                        src={selectedToken.image}
+                        alt={selectedToken.name}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    )}
+                    <CardTitle>{selectedToken.name}</CardTitle>
+                  </div>
                   <Badge variant="outline">{selectedToken.symbol}</Badge>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl font-bold">
-                    ${selectedToken.price.toFixed(2)}
+                    $
+                    {selectedToken.price.toFixed(
+                      selectedToken.price < 0.1 ? 4 : 2
+                    )}
                   </span>
                   <Badge
                     variant={
@@ -174,10 +277,33 @@ const TokensPage = () => {
                 </div>
               </div>
               <CardDescription>
-                Market Cap: ${(selectedToken.marketCap / 1_000_000).toFixed(2)}M
-                • 24h Volume: $
-                {(selectedToken.volume24h / 1_000_000).toFixed(2)}M
+                Market Cap: {formatCurrency(selectedToken.marketCap)}• 24h
+                Volume: {formatCurrency(selectedToken.volume24h)}
+                {selectedToken.url && (
+                  <a
+                    href={selectedToken.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 inline-flex items-center text-primary hover:underline"
+                  >
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    View
+                  </a>
+                )}
               </CardDescription>
+              {selectedToken.description && (
+                <div className="mt-2 text-sm text-muted-foreground">
+                  {selectedToken.description}
+                </div>
+              )}
+              {selectedToken.category && (
+                <div className="mt-2">
+                  <Badge variant="secondary" className="mr-2">
+                    {selectedToken.category}
+                  </Badge>
+                  <Badge variant="outline">{selectedToken.chain}</Badge>
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="7d">
@@ -190,17 +316,16 @@ const TokensPage = () => {
                     <TabsTrigger value="1y">1y</TabsTrigger>
                     <TabsTrigger value="all">All</TabsTrigger>
                   </TabsList>
-                  <button className="flex items-center gap-1 text-sm text-primary hover:underline">
-                    <Star className="h-4 w-4" />
-                    {selectedToken.watchlisted
-                      ? "Remove from Watchlist"
-                      : "Add to Watchlist"}
-                  </button>
                 </div>
 
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={selectedToken.chart}>
+                    <LineChart
+                      data={selectedToken.chart.map((price, index) => ({
+                        time: `Day ${index + 1}`,
+                        price,
+                      }))}
+                    >
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
                       <XAxis dataKey="time" />
                       <YAxis domain={["auto", "auto"]} />
@@ -230,17 +355,25 @@ const TokensPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-1">
-                {tokenData.map((token) => (
+                {filteredTokens.map((token) => (
                   <div
-                    key={token.id}
+                    key={token.name}
                     className={`flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-muted ${
-                      selectedToken.id === token.id ? "bg-muted" : ""
+                      selectedToken.name === token.name ? "bg-muted" : ""
                     }`}
                     onClick={() => setSelectedToken(token)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
-                        {token.symbol.charAt(0)}
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 overflow-hidden">
+                        {token.image ? (
+                          <img
+                            src={token.image}
+                            alt={token.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          token.symbol.charAt(0)
+                        )}
                       </div>
                       <div>
                         <div className="font-medium">{token.name}</div>
@@ -251,51 +384,18 @@ const TokensPage = () => {
                     </div>
                     <div className="text-right">
                       <div className="font-medium">
-                        ${token.price.toFixed(token.price < 1 ? 4 : 2)}
+                        ${token.price.toFixed(token.price < 0.1 ? 4 : 2)}
                       </div>
                       <div
-                        className={`text-xs flex items-center justify-end ${
+                        className={`text-xs ${
                           token.change24h >= 0
                             ? "text-green-500"
                             : "text-red-500"
                         }`}
                       >
-                        {token.change24h >= 0 ? (
-                          <ArrowUpRight className="h-3 w-3 mr-1" />
-                        ) : (
-                          <ArrowDownRight className="h-3 w-3 mr-1" />
-                        )}
-                        {Math.abs(token.change24h).toFixed(2)}%
+                        {token.change24h >= 0 ? "+" : ""}
+                        {token.change24h.toFixed(2)}%
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Recently Viewed</CardTitle>
-              <CardDescription>Your recently viewed tokens</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {tokenData.slice(0, 3).map((token) => (
-                  <div
-                    key={`recent-${token.id}`}
-                    className="flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-muted"
-                    onClick={() => setSelectedToken(token)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs">
-                        {token.symbol.charAt(0)}
-                      </div>
-                      <div className="font-medium">{token.name}</div>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span>2h ago</span>
                     </div>
                   </div>
                 ))}

@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,7 +57,7 @@ const DashboardHeader = ({
       <div className="flex items-center space-x-4">
         <div className="flex items-center">
           <img
-            src="src/images/logo.png"
+            src="/logo.png"
             alt="Avalanche Logo"
             className="h-10 w-10 mr-2"
           />
@@ -118,15 +117,6 @@ const DashboardHeader = ({
               variant="ghost"
               className="flex items-center space-x-2 text-base-content hover:bg-base-200"
             >
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={avatarUrl} alt={username} />
-                <AvatarFallback className="bg-primary/10 text-primary">
-                  {username
-                    .split(" ")
-                    .map((name) => name[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
               <span className="font-medium hidden md:inline-block">
                 {username}
               </span>
