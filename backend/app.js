@@ -92,7 +92,7 @@ app.get("/api/token-prices", async (req, res) => {
     const tokens = req.query.tokens || "avalanche-2,joe,pangolin,benqi";
 
     const response = await axios.get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${tokens}&vs_currencies=usd&include_24h_change=true&include_market_cap=true&include_24h_vol=true`,
+      `https://api.coingecko.com/api/v3/simple/price?ids=avalanche-2,joe,pangolin,benqi,aave,frax,sushi,yield-yak,lydia-finance,spookyswap&vs_currencies=usd&include_24h_change=true&include_market_cap=true&include_24h_vol=true`,
       {
         headers: {
           Accept: "application/json",
