@@ -174,7 +174,7 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
           }
 
           setTps({
-            value: avgTps.toFixed(1),
+            value: avgTps.toFixed(1) + "K",
             change: {
               value: "0.3%",
               isPositive: true,
@@ -183,7 +183,7 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
         } else {
           // Set fallback TPS
           setTps({
-            value: "4.2",
+            value: "4.2K",
             change: {
               value: "0.3%",
               isPositive: true,
@@ -194,7 +194,7 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
         console.error("Error fetching TPS:", error);
         // Set fallback TPS
         setTps({
-          value: "4.2",
+          value: "4.2K",
           change: {
             value: "0.3%",
             isPositive: true,
