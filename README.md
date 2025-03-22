@@ -34,7 +34,7 @@ An advanced blockchain analytics and exploration platform for the Avalanche ecos
 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/avalook.git
+git clone https://github.com/marcelogarza/avalook.git
 cd avalook
 ```
 
