@@ -1,72 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   Activity,
   BarChart2,
   DollarSign,
-  RefreshCw,
   CircleDollarSign,
   Wallet,
   BadgePercent,
 } from "lucide-react";
 import axios from "axios";
+import OverviewCard from "./OverviewCard";
 
-interface OverviewCardProps {
-  title: string;
-  value: string;
-  change?: {
-    value: string;
-    isPositive: boolean;
-  };
-  icon: React.ReactNode;
-  isLoading: boolean;
-  tooltip?: string;
+interface OverviewSectionProps {
+  refreshTrigger?: number;
 }
 
-const OverviewCard = ({
-  title = "Metric",
-  value = "$0.00",
-  change,
-  icon = <Activity className="h-4 w-4" />,
-  isLoading,
-  tooltip,
-}: OverviewCardProps) => {
-  return (
-    <Card className="bg-base-100 border border-base-300 hover:shadow-md transition-shadow duration-300">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-base-content group relative">
-          {title}
-          {tooltip && (
-            <span className="hidden group-hover:block absolute top-full left-0 z-10 bg-base-300 text-base-content p-2 rounded text-xs mt-1 max-w-[200px]">
-              {tooltip}
-            </span>
-          )}
-        </CardTitle>
-        <div className="h-8 w-8 flex items-center justify-center rounded-full bg-base-200 text-primary">
-          {icon}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="h-6 w-1/2 animate-pulse bg-base-300 rounded"></div>
-        ) : (
-          <div className="text-2xl font-bold text-base-content">{value}</div>
-        )}
-        {change && (
-          <p
-            className={`mt-1 text-xs ${
-              change.isPositive ? "text-success" : "text-error"
-            }`}
-          >
-            {change.value}
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-const OverviewSection = () => {
+const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
   const [tps, setTps] = useState<{
     value: string;
     change?: { value: string; isPositive: boolean };
@@ -110,12 +58,18 @@ const OverviewSection = () => {
     activeAddresses: true,
   });
 
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchNetworkData();
   }, []);
+
+  // Add effect to listen for refreshTrigger changes
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      fetchNetworkData();
+    }
+  }, [refreshTrigger]);
 
   const formatCurrency = (value: number): string => {
     if (value >= 1e9) {
@@ -455,8 +409,6 @@ const OverviewSection = () => {
         });
       }
       setLoading((prev) => ({ ...prev, activeAddresses: false }));
-
-      setLastUpdated(new Date());
     } catch (error) {
       console.error("Error fetching network data:", error);
     } finally {
@@ -466,26 +418,7 @@ const OverviewSection = () => {
 
   return (
     <section className="grid gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold tracking-tight">Overview</h2>
-        <button
-          onClick={fetchNetworkData}
-          className="flex items-center space-x-1 text-xs text-primary hover:text-primary/80 transition-colors"
-          disabled={refreshing}
-        >
-          <RefreshCw
-            className={`h-3 w-3 ${refreshing ? "animate-spin" : ""}`}
-          />
-          <span>
-            {refreshing
-              ? "Refreshing..."
-              : lastUpdated
-              ? `Updated: ${lastUpdated.toLocaleTimeString()}`
-              : "Refresh"}
-          </span>
-        </button>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
         <OverviewCard
           title="TPS"
           value={tps.value}

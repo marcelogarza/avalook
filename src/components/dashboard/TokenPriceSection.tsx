@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { TrendingUp, DollarSign, BarChart2, RefreshCw } from "lucide-react";
+import { TrendingUp, DollarSign, BarChart2 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { TokenData, NetworkMetrics, TokenPriceHistory } from "../../types";
 
 interface TokenPriceSectionProps {
   title?: string;
+  refreshTrigger?: number;
 }
 
 const TokenPriceSection = ({
   title = "Token Prices",
+  refreshTrigger = 0,
 }: TokenPriceSectionProps) => {
   const [tokens, setTokens] = useState<TokenData[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -254,12 +256,6 @@ const TokenPriceSection = ({
     }
   };
 
-  const handleRefresh = () => {
-    // Reset retry count on manual refresh
-    setRetryCount(0);
-    fetchTokenPrices();
-  };
-
   useEffect(() => {
     // Fetch data on component mount
     fetchTokenPrices();
@@ -269,6 +265,15 @@ const TokenPriceSection = ({
 
     return () => clearInterval(intervalId);
   }, []);
+
+  // Listen for refreshTrigger changes to refresh data
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      // Reset retry count on manual refresh
+      setRetryCount(0);
+      fetchTokenPrices();
+    }
+  }, [refreshTrigger]);
 
   // Update tokens whenever tokenHistories changes
   useEffect(() => {
@@ -302,30 +307,11 @@ const TokenPriceSection = ({
         <CardTitle className="text-xl font-bold text-base-content">
           {title}
         </CardTitle>
-        <div className="flex items-center space-x-2">
-          {lastUpdated && (
-            <p className="text-xs text-base-content/60">
-              Updated: {lastUpdated.toLocaleTimeString()}
-            </p>
-          )}
-          <button
-            onClick={handleRefresh}
-            disabled={isLoading}
-            className="text-base-content/70 hover:text-primary disabled:opacity-50"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />
-          </button>
-          <Tabs defaultValue="all">
-            <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="defi">DeFi</TabsTrigger>
-              <TabsTrigger value="gaming">Gaming</TabsTrigger>
-              <TabsTrigger value="infrastructure">Infrastructure</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+        <Tabs defaultValue="all">
+          <TabsList>
+            <TabsTrigger value="all">All</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </CardHeader>
       <CardContent className="flex flex-col justify-between flex-1 pb-0">
         <div>

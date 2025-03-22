@@ -13,13 +13,6 @@ import {
   TabsTrigger,
 } from "../../components/ui/tabs";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/ui/select";
-import {
   LineChart,
   Line,
   XAxis,
@@ -29,10 +22,10 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { RefreshCw } from "lucide-react";
 
 interface ChartsSectionProps {
   className?: string;
+  refreshTrigger?: number;
 }
 
 interface TransactionData {
@@ -57,7 +50,10 @@ interface ActiveAddressData {
 // API base URL - use environment variable if available
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
 
-const ChartsSection = ({ className = "" }: ChartsSectionProps) => {
+const ChartsSection = ({
+  className = "",
+  refreshTrigger = 0,
+}: ChartsSectionProps) => {
   const [timeRange, setTimeRange] = useState("7d");
   const [transactionVolumeData, setTransactionVolumeData] = useState<
     TransactionData[]
@@ -68,7 +64,6 @@ const ChartsSection = ({ className = "" }: ChartsSectionProps) => {
   >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // Format date based on the time range
   const formatDate = (dateString: string, range: string) => {
@@ -286,11 +281,6 @@ const ChartsSection = ({ className = "" }: ChartsSectionProps) => {
     }
   };
 
-  // Handle refresh clicked by user
-  const handleRefresh = () => {
-    fetchData();
-  };
-
   // Fetch all data
   const fetchData = async () => {
     setIsLoading(true);
@@ -323,8 +313,6 @@ const ChartsSection = ({ className = "" }: ChartsSectionProps) => {
           setActiveAddressesData(mockData.addresses);
         }
       }
-
-      setLastUpdated(new Date());
     } catch (err) {
       console.error("Failed to fetch chart data:", err);
       // If all data fetching failed, use mock data
@@ -337,12 +325,17 @@ const ChartsSection = ({ className = "" }: ChartsSectionProps) => {
     }
   };
 
-  // Fetch data when component mounts or time range changes
+  // Fetch data when component mounts
   useEffect(() => {
     fetchData();
-    // We're not setting up an interval here - data only refreshes when time range changes
-    // or when user manually refreshes
   }, [timeRange]);
+
+  // Listen for refreshTrigger changes to refresh data
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      fetchData();
+    }
+  }, [refreshTrigger]);
 
   return (
     <Card className={`w-full bg-base-100 ${className} border border-base-300`}>
@@ -350,34 +343,6 @@ const ChartsSection = ({ className = "" }: ChartsSectionProps) => {
         <CardTitle className="text-xl font-bold text-base-content">
           Analytics Charts
         </CardTitle>
-        <div className="flex items-center space-x-3">
-          {lastUpdated && (
-            <p className="text-xs text-base-content/60">
-              Updated: {lastUpdated.toLocaleTimeString()}
-            </p>
-          )}
-          <button
-            onClick={handleRefresh}
-            disabled={isLoading}
-            className="text-base-content/70 hover:text-primary disabled:opacity-50"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />
-          </button>
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Time Range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="24h">Last 24h</SelectItem>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-              <SelectItem value="90d">Last 90 days</SelectItem>
-              <SelectItem value="1y">Last year</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </CardHeader>
       <CardContent className="text-base-content">
         {isLoading ? (
