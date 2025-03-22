@@ -118,15 +118,6 @@ const DashboardHeader = ({
               variant="ghost"
               className="flex items-center space-x-2 text-base-content hover:bg-base-200"
             >
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={avatarUrl} alt={username} />
-                <AvatarFallback className="bg-primary/10 text-primary">
-                  {username
-                    .split(" ")
-                    .map((name) => name[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
               <span className="font-medium hidden md:inline-block">
                 {username}
               </span>
