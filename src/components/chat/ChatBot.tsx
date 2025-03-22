@@ -38,13 +38,13 @@ const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
 
     try {
       // Make API call to OpenAI
-      const response = await fetch("/api/chat", {
+      const response = await fetch("http://localhost:5001/api/chat-completion", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: [...messages, { role: "user", content: message }],
+          message: message
         }),
       });
 
@@ -53,6 +53,7 @@ const ChatBot = ({ title = "AvaLook Assistant" }: ChatBotProps) => {
       }
 
       const data = await response.json();
+      console.log(data)
 
       // Add AI response
       addMessage({ role: "assistant", content: data.message });

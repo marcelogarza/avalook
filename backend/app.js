@@ -239,18 +239,64 @@ app.get("/api/active", async (req, res) => {
   }
 });
 
-// Chat completion API using OpenAI
+// Chat completion API using OpenAI a
 app.post("/api/chat-completion", async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, context, messageHistory } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: "Message is required" });
     }
 
+    // Create a system message with website context data
+    const systemMessage = {
+      role: "system",
+      content: `You are a helpful assistant for AvaLook, an Avalanche blockchain explorer dashboard. 
+      You specialize in providing information about Avalanche blockchain, its ecosystem, subnets, and related technologies.
+      
+      WEBSITE CONTEXT:
+      The following is current data from the AvaLook dashboard that you can reference in your responses:
+      
+      ${context?.tokenPrices ? `TOKEN PRICES:
+      ${Object.entries(context.tokenPrices)
+        .map(([token, data]) => {
+          return `- ${token}: $${data?.usd || 'N/A'} (24h change: ${data?.usd_24h_change ? data.usd_24h_change.toFixed(2) : 'N/A'}%)`;
+        })
+        .join('\n')}` : ''}
+      
+      ${context?.networkStats?.tps ? `NETWORK PERFORMANCE:
+      - TPS (Transactions Per Second): ${context.networkStats.tps.value || 'N/A'}
+      - Gas Price: ${context.networkStats.gas?.value || 'N/A'}
+      - Trading Volume: ${context.networkStats.volume?.value || 'N/A'}
+      - Active Users: ${context.networkStats.activeUsers?.value || 'N/A'}` : ''}
+      
+      ${context?.news ? `RECENT NEWS:
+      ${(context.news || []).slice(0, 3).map(article => `- ${article.title || 'N/A'}`).join('\n')}` : ''}
+      
+      INSTRUCTIONS:
+      - When answering questions about token prices, market data, or network stats, use the above data.
+      - If the user asks for information not in the context, provide general knowledge about Avalanche.
+      - Keep responses concise and relevant to Avalanche blockchain and the data available.
+      - Format currency values appropriately with $ symbol for USD.
+      `
+    };
+
+    // Build messages array with system prompt and message history
+    const messages = [systemMessage];
+    
+    // Add message history if provided
+    if (messageHistory && Array.isArray(messageHistory)) {
+      // Only use the most recent messages to stay within token limits
+      const recentMessages = messageHistory.slice(-10);
+      messages.push(...recentMessages);
+    } else {
+      // If no history, just add the current message
+      messages.push({ role: "user", content: message });
+    }
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
-      messages: [{ role: "user", content: message }],
+      messages,
     });
 
     res.json({ message: completion.choices[0].message.content });
