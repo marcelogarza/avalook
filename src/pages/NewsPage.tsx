@@ -58,7 +58,9 @@ const NewsPage = () => {
 
                 // Otherwise map based on tags
                 if (
-                  tags?.some((t: any) => t.title?.toLowerCase().includes("defi"))
+                  tags?.some((t: any) =>
+                    t.title?.toLowerCase().includes("defi")
+                  )
                 )
                   return "DeFi";
                 if (
@@ -66,7 +68,9 @@ const NewsPage = () => {
                 )
                   return "NFTs";
                 if (
-                  tags?.some((t: any) => t.title?.toLowerCase().includes("governance"))
+                  tags?.some((t: any) =>
+                    t.title?.toLowerCase().includes("governance")
+                  )
                 )
                   return "Governance";
 
