@@ -252,39 +252,11 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
       try {
         const tpsResponse = await axios.get("http://localhost:5001/api/tps");
         if (tpsResponse.data) {
-          // Calculate average TPS from the data array
-          let avgTps = 0;
-
-          // Check if data has results array (which contains timestamp/value pairs)
-          if (
-            tpsResponse.data.results &&
-            Array.isArray(tpsResponse.data.results) &&
-            tpsResponse.data.results.length > 0
-          ) {
-            const sum = tpsResponse.data.results.reduce(
-              (acc, item) => acc + (item.value || 0),
-              0
-            );
-            avgTps = sum / tpsResponse.data.results.length;
-          }
-          // Fallback to direct array format if results not found
-          else if (
-            Array.isArray(tpsResponse.data) &&
-            tpsResponse.data.length > 0
-          ) {
-            const sum = tpsResponse.data.reduce(
-              (acc, item) => acc + (item.value || 0),
-              0
-            );
-            avgTps = sum / tpsResponse.data.length;
-          }
-          // Fallback to direct tps property if available
-          else if (tpsResponse.data.tps) {
-            avgTps = tpsResponse.data.tps;
-          }
+          // Use the value directly from the API
+          const tpsValue = parseFloat(tpsResponse.data.value) || 0;
 
           setTps({
-            value: avgTps.toFixed(1) + "K",
+            value: formatNumber(tpsValue), // Use the formatting function for consistency
             change: {
               value: "0.3%",
               isPositive: true,
@@ -319,39 +291,11 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
           "http://localhost:5001/api/volume"
         );
         if (volumeResponse.data) {
-          // Calculate average transaction volume
-          let avgVolume = 0;
-
-          // Check if data has results array (which contains timestamp/value pairs)
-          if (
-            volumeResponse.data.results &&
-            Array.isArray(volumeResponse.data.results) &&
-            volumeResponse.data.results.length > 0
-          ) {
-            const sum = volumeResponse.data.results.reduce(
-              (acc, item) => acc + (item.value || 0),
-              0
-            );
-            avgVolume = sum / volumeResponse.data.results.length;
-          }
-          // Fallback to direct array format if results not found
-          else if (
-            Array.isArray(volumeResponse.data) &&
-            volumeResponse.data.length > 0
-          ) {
-            const sum = volumeResponse.data.reduce(
-              (acc, item) => acc + (item.value || 0),
-              0
-            );
-            avgVolume = sum / volumeResponse.data.length;
-          }
-          // Fallback to direct count property if available
-          else if (volumeResponse.data.count) {
-            avgVolume = volumeResponse.data.count;
-          }
+          // Use the value directly from the API
+          const volumeValue = parseInt(volumeResponse.data.value) || 0;
 
           setTransactionsVolume({
-            value: formatNumber(avgVolume),
+            value: formatNumber(volumeValue),
             change: {
               value: "5.2%",
               isPositive: true,
@@ -384,47 +328,11 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
       try {
         const gasResponse = await axios.get("http://localhost:5001/api/gas");
         if (gasResponse.data) {
-          // Calculate average gas used
-          let avgGasUsed = 0;
-
-          // Check if data has results array (which contains timestamp/value pairs)
-          if (
-            gasResponse.data.results &&
-            Array.isArray(gasResponse.data.results) &&
-            gasResponse.data.results.length > 0
-          ) {
-            const sum = gasResponse.data.results.reduce(
-              (acc, item) => acc + (item.value || 0),
-              0
-            );
-            avgGasUsed = sum / gasResponse.data.results.length;
-          }
-          // Fallback to direct array format if results not found
-          else if (
-            Array.isArray(gasResponse.data) &&
-            gasResponse.data.length > 0
-          ) {
-            const sum = gasResponse.data.reduce(
-              (acc, item) => acc + (item.value || 0),
-              0
-            );
-            avgGasUsed = sum / gasResponse.data.length;
-          }
-          // Fallback to direct gas_used property if available
-          else if (gasResponse.data.gas_used) {
-            avgGasUsed = gasResponse.data.gas_used;
-          }
-
-          // Convert gas to an approximation of average fee in USD
-          const avgGasPrice = 0.00000002; // Example fixed AVAX per gas unit
-          const avgGasFee = avgGasUsed * avgGasPrice;
-
-          // Use a fallback AVAX price since token-prices might have failed
-          const avaxPrice = 20; // Fallback price
-          const gasFeeUsd = avgGasFee * avaxPrice;
+          // Use the value directly from the API - ensure it's treated as a number
+          const gasValue = parseInt(gasResponse.data.value) || 0;
 
           setGasFees({
-            value: `$${gasFeeUsd.toFixed(2)}`,
+            value: formatNumber(gasValue),
             change: {
               value: "2.1%",
               isPositive: false,
@@ -433,7 +341,7 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
         } else {
           // Set fallback gas fees
           setGasFees({
-            value: "$0.05",
+            value: "1.2M",
             change: {
               value: "2.1%",
               isPositive: false,
@@ -444,7 +352,7 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
         console.error("Error fetching gas fees:", error);
         // Set fallback gas fees
         setGasFees({
-          value: "$0.05",
+          value: "1.2M",
           change: {
             value: "2.1%",
             isPositive: false,
