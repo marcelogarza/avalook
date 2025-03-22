@@ -255,7 +255,7 @@ app.post("/api/chat-completion", async (req, res) => {
 
     res.json({ message: completion.choices[0].message.content });
   } catch (error) {
-    console.error("Error with OpenAI API:", error.message);
+    console.error("Error with OpenAI API:", error);
     res.status(500).json({ message: "Error with OpenAI API" });
   }
 });
