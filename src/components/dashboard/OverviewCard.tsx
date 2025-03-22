@@ -1,56 +1,67 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Activity } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
 interface OverviewCardProps {
   title: string;
   value: string;
+  icon: LucideIcon;
+  iconColorClass: string;
   change?: {
     value: string;
     isPositive: boolean;
   };
-  icon: React.ReactNode;
-  isLoading: boolean;
-  tooltip?: string;
+  description?: string;
+  isLoading?: boolean;
+  imageUrl?: string;
 }
 
 const OverviewCard = ({
-  title = "Metric",
-  value = "$0.00",
+  title,
+  value,
+  icon: Icon,
+  iconColorClass,
   change,
-  icon = <Activity className="h-4 w-4" />,
-  isLoading,
-  tooltip,
+  description,
+  isLoading = false,
+  imageUrl,
 }: OverviewCardProps) => {
   return (
-    <Card className="bg-base-100 border border-base-300 hover:shadow-md transition-shadow duration-300">
-      <CardHeader className="flex flex-row items-center justify-between py-2 px-3">
-        <CardTitle className="text-xs font-medium text-base-content group relative">
-          {title}
-          {tooltip && (
-            <span className="hidden group-hover:block absolute top-full left-0 z-10 bg-base-300 text-base-content p-2 rounded text-xs mt-1 max-w-[200px]">
-              {tooltip}
-            </span>
-          )}
-        </CardTitle>
-        <div className="h-6 w-6 flex items-center justify-center rounded-full bg-base-200 text-primary">
-          {icon}
-        </div>
-      </CardHeader>
-      <CardContent className="py-2 px-3">
-        {isLoading ? (
-          <div className="h-6 w-1/2 animate-pulse bg-base-300 rounded"></div>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        {imageUrl ? (
+          <img src={imageUrl} alt={title} className="h-5 w-5 rounded-full" />
         ) : (
-          <div className="text-xl font-bold text-base-content">{value}</div>
+          <Icon className={`h-5 w-5 ${iconColorClass}`} />
         )}
-        {change && (
-          <p
-            className={`mt-1 text-xs ${
-              change.isPositive ? "text-success" : "text-error"
-            }`}
-          >
-            {change.value}
-          </p>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="animate-pulse">
+            <div className="h-6 bg-muted rounded w-2/3 mb-2"></div>
+            <div className="h-4 bg-muted rounded w-1/3"></div>
+          </div>
+        ) : (
+          <>
+            <div className="text-2xl font-bold">{value}</div>
+            {change && (
+              <p className="text-xs text-muted-foreground">
+                <span
+                  className={
+                    change.isPositive ? "text-green-500" : "text-red-500"
+                  }
+                >
+                  {change.isPositive ? "+" : "-"}
+                  {change.value}
+                </span>{" "}
+                {description || "from last period"}
+              </p>
+            )}
+            {!change && description && (
+              <p className="text-xs text-muted-foreground">{description}</p>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

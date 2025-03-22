@@ -49,6 +49,11 @@ const cache = {
     timestamp: 0,
     expiryTime: 600000, // 10 minutes cache
   },
+  dapps: {
+    data: null,
+    timestamp: 0,
+    expiryTime: 600000, // 10 minutes cache
+  },
 };
 
 // Helper function to check if cache is valid
@@ -257,33 +262,52 @@ app.post("/api/chat-completion", async (req, res) => {
       WEBSITE CONTEXT:
       The following is current data from the AvaLook dashboard that you can reference in your responses:
       
-      ${context?.tokenPrices ? `TOKEN PRICES:
+      ${
+        context?.tokenPrices
+          ? `TOKEN PRICES:
       ${Object.entries(context.tokenPrices)
         .map(([token, data]) => {
-          return `- ${token}: $${data?.usd || 'N/A'} (24h change: ${data?.usd_24h_change ? data.usd_24h_change.toFixed(2) : 'N/A'}%)`;
+          return `- ${token}: $${data?.usd || "N/A"} (24h change: ${
+            data?.usd_24h_change ? data.usd_24h_change.toFixed(2) : "N/A"
+          }%)`;
         })
-        .join('\n')}` : ''}
+        .join("\n")}`
+          : ""
+      }
       
-      ${context?.networkStats?.tps ? `NETWORK PERFORMANCE:
-      - TPS (Transactions Per Second): ${context.networkStats.tps.value || 'N/A'}
-      - Gas Price: ${context.networkStats.gas?.value || 'N/A'}
-      - Trading Volume: ${context.networkStats.volume?.value || 'N/A'}
-      - Active Users: ${context.networkStats.activeUsers?.value || 'N/A'}` : ''}
+      ${
+        context?.networkStats?.tps
+          ? `NETWORK PERFORMANCE:
+      - TPS (Transactions Per Second): ${
+        context.networkStats.tps.value || "N/A"
+      }
+      - Gas Price: ${context.networkStats.gas?.value || "N/A"}
+      - Trading Volume: ${context.networkStats.volume?.value || "N/A"}
+      - Active Users: ${context.networkStats.activeUsers?.value || "N/A"}`
+          : ""
+      }
       
-      ${context?.news ? `RECENT NEWS:
-      ${(context.news || []).slice(0, 3).map(article => `- ${article.title || 'N/A'}`).join('\n')}` : ''}
+      ${
+        context?.news
+          ? `RECENT NEWS:
+      ${(context.news || [])
+        .slice(0, 3)
+        .map((article) => `- ${article.title || "N/A"}`)
+        .join("\n")}`
+          : ""
+      }
       
       INSTRUCTIONS:
       - When answering questions about token prices, market data, or network stats, use the above data.
       - If the user asks for information not in the context, provide general knowledge about Avalanche.
       - Keep responses concise and relevant to Avalanche blockchain and the data available.
       - Format currency values appropriately with $ symbol for USD.
-      `
+      `,
     };
 
     // Build messages array with system prompt and message history
     const messages = [systemMessage];
-    
+
     // Add message history if provided
     if (messageHistory && Array.isArray(messageHistory)) {
       // Only use the most recent messages to stay within token limits
@@ -333,6 +357,81 @@ app.get("/api/news", async (req, res) => {
     }
 
     res.status(500).json({ message: "Error fetching news" });
+  }
+});
+
+app.get("/api/dapps", async (req, res) => {
+  try {
+    // Check if we have valid cached data
+    if (isCacheValid("dapps")) {
+      return res.json(cache.dapps.data);
+    }
+
+    // Get list of top Avalanche ecosystem tokens
+    const avaxTokenIds = [
+      "avalanche-2", // AVAX
+      "pangolin", // PNG
+      "joe", // JOE
+      "benqi", // QI
+      "yield-yak", // YAK
+      "platypus-finance", // PTP
+      "vector-finance", // VTX
+      "gmx", // GMX
+      "trader-joe", // JOE (v2)
+      "aave-avalanche", // AAVE.e
+    ];
+
+    const response = await axios.get(
+      "https://api.coingecko.com/api/v3/coins/markets",
+      {
+        params: {
+          vs_currency: "usd",
+          ids: avaxTokenIds.join(","),
+          order: "market_cap_desc",
+          per_page: 10,
+          page: 1,
+          sparkline: false,
+          price_change_percentage: "24h",
+        },
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "AvaLook Dashboard Application",
+        },
+      }
+    );
+
+    // Transform the data to have a dapps-like structure
+    const dappsData = {
+      dapps: response.data.map((token) => ({
+        name: token.name,
+        symbol: token.symbol.toUpperCase(),
+        url: `https://www.coingecko.com/en/coins/${token.id}`,
+        description: `Avalanche ecosystem token with ${
+          token.market_cap_rank ? `rank #${token.market_cap_rank}` : "no rank"
+        }`,
+        category: "DeFi",
+        chain: "Avalanche",
+        market_cap: token.market_cap,
+        price_usd: token.current_price,
+        price_change_24h: token.price_change_percentage_24h,
+        image: token.image,
+      })),
+    };
+
+    // Update cache
+    cache.dapps.data = dappsData;
+    cache.dapps.timestamp = Date.now();
+
+    res.json(dappsData);
+  } catch (error) {
+    console.error("Error fetching dapps:", error.message);
+
+    if (cache.dapps.data) {
+      console.log("Returning stale cache data for dapps");
+      return res.json(cache.dapps.data);
+    }
+
+    res.status(500).json({ message: "Error fetching dapps" });
   }
 });
 

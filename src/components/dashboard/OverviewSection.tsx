@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import OverviewCard from "./OverviewCard";
+import { DappsData } from "../../types";
 
 interface OverviewSectionProps {
   refreshTrigger?: number;
@@ -50,24 +51,37 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
     value: "0",
   });
 
+  const [topTokens, setTopTokens] = useState<
+    Array<{
+      name: string;
+      symbol: string;
+      price: number;
+      change: number;
+      image: string;
+    }>
+  >([]);
+
   const [loading, setLoading] = useState({
     tps: true,
     marketCap: true,
     transactionsVolume: true,
     gasFees: true,
     activeAddresses: true,
+    tokens: true,
   });
 
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchNetworkData();
+    fetchTokenData();
   }, []);
 
   // Add effect to listen for refreshTrigger changes
   useEffect(() => {
     if (refreshTrigger > 0) {
       fetchNetworkData();
+      fetchTokenData();
     }
   }, [refreshTrigger]);
 
@@ -92,6 +106,90 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
       return `${(value / 1e3).toFixed(2)}K`;
     } else {
       return value.toFixed(0);
+    }
+  };
+
+  const fetchTokenData = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, tokens: true }));
+
+      // Fetch both token prices and dapps data
+      const [priceResponse, dappsResponse] = await Promise.all([
+        axios.get("http://localhost:5001/api/token-prices"),
+        axios.get<DappsData>("http://localhost:5001/api/dapps"),
+      ]);
+
+      // Create a map of dapps data for easy lookup
+      const dappsMap: Record<string, any> = {};
+      if (dappsResponse.data?.dapps) {
+        dappsResponse.data.dapps.forEach((dapp) => {
+          // Create a key based on token name (lowercase for case-insensitive comparison)
+          const key = dapp.name.toLowerCase();
+          dappsMap[key] = dapp;
+        });
+      }
+
+      if (priceResponse.data) {
+        const tokens = [];
+
+        // Process AVAX (always include as first token)
+        const avaxData = priceResponse.data["avalanche-2"];
+        if (avaxData) {
+          tokens.push({
+            name: "Avalanche",
+            symbol: "AVAX",
+            price: avaxData.usd || 0,
+            change: avaxData.usd_24h_change || 0,
+            image: dappsMap["avalanche"]?.image || "",
+          });
+        }
+
+        // Add other major tokens with available price data
+        const tokenIds = ["joe", "pangolin", "benqi"];
+        for (const id of tokenIds) {
+          const tokenData = priceResponse.data[id];
+          if (tokenData && tokenData.usd) {
+            const name = id.charAt(0).toUpperCase() + id.slice(1);
+            tokens.push({
+              name: name,
+              symbol: id.toUpperCase(),
+              price: tokenData.usd,
+              change: tokenData.usd_24h_change || 0,
+              image:
+                dappsMap[name.toLowerCase()]?.image ||
+                dappsMap[id.toLowerCase()]?.image ||
+                "",
+            });
+          }
+        }
+
+        // Add additional tokens from dapps data if needed
+        if (dappsResponse.data?.dapps && tokens.length < 4) {
+          const existingTokens = new Set(
+            tokens.map((t) => t.name.toLowerCase())
+          );
+
+          const additionalTokens = dappsResponse.data.dapps
+            .filter((dapp) => !existingTokens.has(dapp.name.toLowerCase()))
+            .map((dapp) => ({
+              name: dapp.name,
+              symbol: dapp.symbol,
+              price: dapp.price_usd || 0,
+              change: dapp.price_change_24h || 0,
+              image: dapp.image,
+            }))
+            .filter((token) => token.price > 0);
+
+          // Add enough tokens to reach a total of 4
+          tokens.push(...additionalTokens.slice(0, 4 - tokens.length));
+        }
+
+        setTopTokens(tokens);
+      }
+    } catch (error) {
+      console.error("Error fetching token data:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, tokens: false }));
     }
   };
 
@@ -417,50 +515,68 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
   };
 
   return (
-    <section className="grid gap-4">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {/* First row - Network stats */}
+      <OverviewCard
+        title="TPS"
+        value={tps.value}
+        icon={Activity}
+        iconColorClass="text-blue-500"
+        change={tps.change}
+        isLoading={loading.tps}
+        description="Average transactions per second"
+      />
+
+      <OverviewCard
+        title="Market Cap"
+        value={marketCap.value}
+        icon={BarChart2}
+        iconColorClass="text-green-500"
+        change={marketCap.change}
+        isLoading={loading.marketCap}
+        description="Total market capitalization"
+      />
+
+      <OverviewCard
+        title="Transactions"
+        value={transactionsVolume.value}
+        icon={BadgePercent}
+        iconColorClass="text-orange-500"
+        change={transactionsVolume.change}
+        isLoading={loading.transactionsVolume}
+        description="24h transaction volume"
+      />
+
+      <OverviewCard
+        title="Gas Fees"
+        value={gasFees.value}
+        icon={CircleDollarSign}
+        iconColorClass="text-purple-500"
+        change={gasFees.change}
+        isLoading={loading.gasFees}
+        description="Average gas price"
+      />
+
+      {/* Second row - Top tokens */}
+      {topTokens.map((token, index) => (
         <OverviewCard
-          title="TPS"
-          value={tps.value}
-          change={tps.change}
-          icon={<Activity className="h-4 w-4" />}
-          isLoading={loading.tps}
-          tooltip="Transactions per second on the Avalanche network"
+          key={token.symbol}
+          title={`${token.name} (${token.symbol})`}
+          value={`$${
+            token.price < 0.1 ? token.price.toFixed(4) : token.price.toFixed(2)
+          }`}
+          icon={DollarSign}
+          iconColorClass="text-green-500"
+          change={{
+            value: `${Math.abs(token.change).toFixed(2)}%`,
+            isPositive: token.change >= 0,
+          }}
+          isLoading={loading.tokens}
+          description="24h price change"
+          imageUrl={token.image}
         />
-        <OverviewCard
-          title="Market Cap"
-          value={marketCap.value}
-          change={marketCap.change}
-          icon={<BarChart2 className="h-4 w-4" />}
-          isLoading={loading.marketCap}
-          tooltip="Total market capitalization of AVAX tokens"
-        />
-        <OverviewCard
-          title="Transactions Volume"
-          value={transactionsVolume.value}
-          change={transactionsVolume.change}
-          icon={<CircleDollarSign className="h-4 w-4" />}
-          isLoading={loading.transactionsVolume}
-          tooltip="Total number of transactions on the network"
-        />
-        <OverviewCard
-          title="Gas Fees"
-          value={gasFees.value}
-          change={gasFees.change}
-          icon={<BadgePercent className="h-4 w-4" />}
-          isLoading={loading.gasFees}
-          tooltip="Average gas fee for transactions"
-        />
-        <OverviewCard
-          title="Active Addresses"
-          value={activeAddresses.value}
-          change={activeAddresses.change}
-          icon={<Wallet className="h-4 w-4" />}
-          isLoading={loading.activeAddresses}
-          tooltip="Number of unique active addresses on the network"
-        />
-      </div>
-    </section>
+      ))}
+    </div>
   );
 };
 

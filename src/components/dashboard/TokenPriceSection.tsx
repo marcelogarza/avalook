@@ -4,7 +4,12 @@ import { TrendingUp, DollarSign, BarChart2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { TokenData, NetworkMetrics, TokenPriceHistory } from "../../types";
+import {
+  TokenData,
+  NetworkMetrics,
+  TokenPriceHistory,
+  DappsData,
+} from "../../types";
 
 interface TokenPriceSectionProps {
   title?: string;
@@ -26,6 +31,7 @@ const TokenPriceSection = ({
   const [networkMetrics, setNetworkMetrics] = useState<NetworkMetrics | null>(
     null
   );
+  const [dappsData, setDappsData] = useState<DappsData | null>(null);
 
   const tokenIds = ["avalanche-2", "joe", "pangolin", "benqi"];
 
@@ -102,6 +108,24 @@ const TokenPriceSection = ({
     }
   };
 
+  // Add function to fetch dapps data
+  const fetchDappsData = async () => {
+    try {
+      const response = await axios.get<DappsData>(
+        "http://localhost:5001/api/dapps",
+        { timeout: 10000 }
+      );
+      if (response.data && response.data.dapps) {
+        setDappsData(response.data);
+        return response.data;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error fetching dapps data:", error);
+      return null;
+    }
+  };
+
   const fetchTokenPrices = async () => {
     try {
       setIsLoading(true);
@@ -112,6 +136,9 @@ const TokenPriceSection = ({
         "http://localhost:5001/api/token-prices",
         { timeout: 20000 }
       );
+
+      // Fetch dapps data
+      const dappsResponse = await fetchDappsData();
 
       // Fetch network metrics separately - won't block token display
       fetchNetworkMetrics().catch((err) =>
@@ -139,6 +166,16 @@ const TokenPriceSection = ({
 
         await Promise.allSettled(historyPromises);
 
+        // Create a map of dapps data for easy lookup
+        const dappsMap: Record<string, any> = {};
+        if (dappsResponse?.dapps) {
+          dappsResponse.dapps.forEach((dapp) => {
+            // Create a key based on token name (lowercase for case-insensitive comparison)
+            const key = dapp.name.toLowerCase();
+            dappsMap[key] = dapp;
+          });
+        }
+
         const tokenData: TokenData[] = [
           {
             name: "Avalanche",
@@ -160,6 +197,16 @@ const TokenPriceSection = ({
               25,
               tokenResponse.data["avalanche-2"]?.usd || 27.5,
             ],
+            // Add data from dapps endpoint if available
+            url:
+              dappsMap["avalanche"]?.url ||
+              `https://www.coingecko.com/en/coins/avalanche-2`,
+            image: dappsMap["avalanche"]?.image || "",
+            description:
+              dappsMap["avalanche"]?.description ||
+              "Avalanche is a layer one blockchain that functions as a platform for decentralized applications and custom blockchain networks.",
+            category: dappsMap["avalanche"]?.category || "DeFi",
+            chain: dappsMap["avalanche"]?.chain || "Avalanche",
           },
           {
             name: "Trader Joe",
@@ -175,6 +222,25 @@ const TokenPriceSection = ({
             chart: tokenHistories.joe || [
               0.5, 0.48, 0.52, 0.51, 0.53, 0.55, 0.54,
             ],
+            // Add data from dapps endpoint if available
+            url:
+              dappsMap["trader joe"]?.url ||
+              dappsMap["joe"]?.url ||
+              `https://www.coingecko.com/en/coins/joe`,
+            image:
+              dappsMap["trader joe"]?.image || dappsMap["joe"]?.image || "",
+            description:
+              dappsMap["trader joe"]?.description ||
+              dappsMap["joe"]?.description ||
+              "Trader Joe is a one-stop-shop decentralized trading platform on the Avalanche network.",
+            category:
+              dappsMap["trader joe"]?.category ||
+              dappsMap["joe"]?.category ||
+              "DeFi",
+            chain:
+              dappsMap["trader joe"]?.chain ||
+              dappsMap["joe"]?.chain ||
+              "Avalanche",
           },
           {
             name: "Pangolin",
@@ -190,6 +256,16 @@ const TokenPriceSection = ({
             chart: tokenHistories.pangolin || [
               0.1, 0.09, 0.11, 0.105, 0.12, 0.115, 0.11,
             ],
+            // Add data from dapps endpoint if available
+            url:
+              dappsMap["pangolin"]?.url ||
+              `https://www.coingecko.com/en/coins/pangolin`,
+            image: dappsMap["pangolin"]?.image || "",
+            description:
+              dappsMap["pangolin"]?.description ||
+              "Pangolin is a decentralized exchange (DEX) for Avalanche and Ethereum assets.",
+            category: dappsMap["pangolin"]?.category || "DeFi",
+            chain: dappsMap["pangolin"]?.chain || "Avalanche",
           },
           {
             name: "BENQI",
@@ -205,8 +281,53 @@ const TokenPriceSection = ({
             chart: tokenHistories.benqi || [
               0.02, 0.019, 0.022, 0.021, 0.023, 0.022, 0.021,
             ],
+            // Add data from dapps endpoint if available
+            url:
+              dappsMap["benqi"]?.url ||
+              `https://www.coingecko.com/en/coins/benqi`,
+            image: dappsMap["benqi"]?.image || "",
+            description:
+              dappsMap["benqi"]?.description ||
+              "BENQI is a liquidity market protocol built on Avalanche.",
+            category: dappsMap["benqi"]?.category || "DeFi",
+            chain: dappsMap["benqi"]?.chain || "Avalanche",
           },
         ];
+
+        // Add additional tokens from dapps data that aren't in the standard list
+        if (dappsResponse?.dapps) {
+          const existingTokens = new Set(
+            tokenData.map((t) => t.name.toLowerCase())
+          );
+
+          const additionalTokens = dappsResponse.dapps
+            .filter((dapp) => !existingTokens.has(dapp.name.toLowerCase()))
+            .map((dapp) => ({
+              name: dapp.name,
+              symbol: dapp.symbol,
+              price: dapp.price_usd || 0,
+              change24h: dapp.price_change_24h || 0,
+              marketCap: dapp.market_cap,
+              volume24h: "N/A", // Volume data might not be available
+              chart: [
+                dapp.price_usd,
+                dapp.price_usd * 0.98,
+                dapp.price_usd * 1.01,
+                dapp.price_usd * 0.99,
+                dapp.price_usd,
+              ], // Generate placeholder chart
+              url: dapp.url,
+              image: dapp.image,
+              description: dapp.description,
+              category: dapp.category,
+              chain: dapp.chain,
+            }));
+
+          // Add up to 3 additional tokens to avoid overloading the UI
+          if (additionalTokens.length > 0) {
+            tokenData.push(...additionalTokens.slice(0, 3));
+          }
+        }
 
         // Filter out tokens with no price data
         const filteredTokens = tokenData.filter((token) => token.price > 0);
