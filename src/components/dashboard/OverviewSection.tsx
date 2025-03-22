@@ -367,39 +367,11 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
           "http://localhost:5001/api/active"
         );
         if (activeResponse.data) {
-          // Calculate average active addresses
-          let avgAddresses = 0;
-
-          // Check if data has results array (which contains timestamp/value pairs)
-          if (
-            activeResponse.data.results &&
-            Array.isArray(activeResponse.data.results) &&
-            activeResponse.data.results.length > 0
-          ) {
-            const sum = activeResponse.data.results.reduce(
-              (acc, item) => acc + (item.value || 0),
-              0
-            );
-            avgAddresses = sum / activeResponse.data.results.length;
-          }
-          // Fallback to direct array format if results not found
-          else if (
-            Array.isArray(activeResponse.data) &&
-            activeResponse.data.length > 0
-          ) {
-            const sum = activeResponse.data.reduce(
-              (acc, item) => acc + (item.value || 0),
-              0
-            );
-            avgAddresses = sum / activeResponse.data.length;
-          }
-          // Fallback to direct addresses property if available
-          else if (activeResponse.data.addresses) {
-            avgAddresses = activeResponse.data.addresses;
-          }
+          // Use the value directly from the API
+          const activeValue = parseInt(activeResponse.data.value) || 0;
 
           setActiveAddresses({
-            value: formatNumber(avgAddresses),
+            value: formatNumber(activeValue),
             change: {
               value: "3.7%",
               isPositive: true,

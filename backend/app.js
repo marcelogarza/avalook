@@ -637,6 +637,137 @@ app.get("/api/status", async (req, res) => {
   }
 });
 
+// API endpoint for token price history
+app.get("/api/token-price-history/:tokenId", async (req, res) => {
+  try {
+    const { tokenId } = req.params;
+
+    // Generate realistic looking historical data
+    const today = new Date();
+    const historyData = [];
+
+    // Create 30 days of mock data with realistic price movements
+    let basePrice;
+
+    switch (tokenId) {
+      case "avalanche-2":
+        basePrice = 20.0; // AVAX
+        break;
+      case "joe":
+        basePrice = 0.19; // JOE
+        break;
+      case "pangolin":
+        basePrice = 0.16; // PNG
+        break;
+      case "benqi":
+        basePrice = 0.008; // QI
+        break;
+      default:
+        basePrice = 1.0;
+    }
+
+    // Generate price history with random variations
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+
+      // Create a random price movement (±5% daily)
+      const change = (Math.random() * 10 - 5) / 100;
+
+      // Make sure newer dates generally follow current price trends
+      let priceMultiplier = 1;
+      if (i < 7) {
+        // Last week prices are closer to current price
+        priceMultiplier = 0.9 + (0.1 * (7 - i)) / 7;
+      } else {
+        // Older prices have more randomness
+        priceMultiplier = 0.8 + Math.random() * 0.4;
+      }
+
+      const dailyPrice = basePrice * priceMultiplier * (1 + change);
+
+      historyData.push({
+        date: date.toISOString().split("T")[0],
+        timestamp: date.getTime(),
+        price: parseFloat(dailyPrice.toFixed(6)),
+      });
+    }
+
+    res.json(historyData);
+  } catch (error) {
+    console.error(`Error fetching token history: ${error.message}`);
+    res.status(500).json({ message: "Error fetching token price history" });
+  }
+});
+
+// Add dapps endpoint
+app.get("/api/dapps", async (req, res) => {
+  try {
+    // Return mock dapps data for the frontend
+    const dappsData = {
+      dapps: [
+        {
+          name: "Avalanche",
+          symbol: "AVAX",
+          category: "L1 Blockchain",
+          description:
+            "Avalanche is a layer one blockchain that functions as a platform for decentralized applications and custom blockchain networks.",
+          url: "https://www.avax.network/",
+          image: "https://cryptologos.cc/logos/avalanche-avax-logo.png",
+          price_usd: 19.34,
+          price_change_24h: 2.5,
+          market_cap: "$10.2B",
+          chain: "Avalanche",
+        },
+        {
+          name: "Trader Joe",
+          symbol: "JOE",
+          category: "DEX",
+          description:
+            "Trader Joe is a one-stop-shop decentralized trading platform on the Avalanche network.",
+          url: "https://traderjoexyz.com/",
+          image: "https://cryptologos.cc/logos/trader-joe-joe-logo.png",
+          price_usd: 0.19,
+          price_change_24h: 3.2,
+          market_cap: "$120M",
+          chain: "Avalanche",
+        },
+        {
+          name: "Pangolin",
+          symbol: "PNG",
+          category: "DEX",
+          description:
+            "Pangolin is a decentralized exchange (DEX) for Avalanche and Ethereum assets.",
+          url: "https://pangolin.exchange/",
+          image: "https://cryptologos.cc/logos/pangolin-png-logo.png",
+          price_usd: 0.16,
+          price_change_24h: 1.8,
+          market_cap: "$95M",
+          chain: "Avalanche",
+        },
+        {
+          name: "Benqi",
+          symbol: "QI",
+          category: "Lending",
+          description:
+            "BENQI is a non-custodial liquidity market protocol on Avalanche.",
+          url: "https://benqi.fi/",
+          image: "https://cryptologos.cc/logos/benqi-qi-logo.png",
+          price_usd: 0.008,
+          price_change_24h: -0.5,
+          market_cap: "$52M",
+          chain: "Avalanche",
+        },
+      ],
+    };
+
+    res.json(dappsData);
+  } catch (error) {
+    console.error("Error serving dapps data:", error.message);
+    res.status(500).json({ message: "Error fetching dapps data" });
+  }
+});
+
 // Start server
 app.listen(port, () => {
   console.log(`Backend server is running on port ${port}`);
