@@ -52,13 +52,6 @@ npm run start:all
 
 The frontend will be available at `http://localhost:5173` and the backend at `http://localhost:3000`.
 
-## 📱 Screenshots
-
-<div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-  <img src="https://placehold.co/400x300/1E3A8A/FFFFFF?text=Dashboard" alt="Dashboard" width="400"/>
-  <img src="https://placehold.co/400x300/1E3A8A/FFFFFF?text=Charts" alt="Charts" width="400"/>
-  <img src="https://placehold.co/400x300/1E3A8A/FFFFFF?text=Network" alt="Network" width="400"/>
-</div>
 
 ## 🔄 Workflow
 
