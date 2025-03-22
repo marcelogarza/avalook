@@ -58,7 +58,7 @@ const DashboardHeader = ({
       <div className="flex items-center space-x-4">
         <div className="flex items-center">
           <img
-            src="src/images/logo.png"
+            src="/logo.png"
             alt="Avalanche Logo"
             className="h-10 w-10 mr-2"
           />
