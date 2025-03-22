@@ -45,7 +45,7 @@ const OverviewCard = ({
         ) : (
           <>
             <div className="text-2xl font-bold">{value}</div>
-            {change && (
+            {change && change.value && !change.value.includes("NaN") && (
               <p className="text-xs text-muted-foreground">
                 <span
                   className={

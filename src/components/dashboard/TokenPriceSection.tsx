@@ -421,7 +421,7 @@ const TokenPriceSection = ({
 
   return (
     <Card
-      className="w-full bg-base-100 border border-base-300 flex flex-col"
+      className="w-full bg-base-100 shadow-sm border border-base-300 flex flex-col"
       style={{ height: "500px" }}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -435,73 +435,63 @@ const TokenPriceSection = ({
         </Tabs>
       </CardHeader>
       <CardContent className="flex flex-col justify-between flex-1 pb-0">
-        <div>
-          <div
-            className="space-y-4 overflow-y-auto pr-2"
-            style={{ height: "265px" }}
-          >
-            {tokens.map((token, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-content font-bold">
-                    {token.symbol.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-base-content">
-                      {token.name}
-                    </h3>
-                    <p className="text-sm text-base-content/60">
-                      {token.symbol}
-                    </p>
-                  </div>
+        <div className="space-y-4 overflow-y-auto" style={{ height: "365px" }}>
+          {tokens.map((token, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between p-3 rounded-lg hover:bg-base-200 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-content font-bold">
+                  {token.symbol.charAt(0)}
                 </div>
-
-                <div className="flex-1 mx-4 hidden md:block">
-                  <div className="h-10 flex items-center">
-                    {/* Simple sparkline chart */}
-                    <div className="flex items-end h-8 space-x-1">
-                      {token.chart.map((value, i) => {
-                        const max = Math.max(
-                          ...token.chart.filter((v) => v > 0)
-                        );
-                        const height =
-                          max > 0 ? `${(value / max) * 100}%` : "0%";
-                        return (
-                          <div
-                            key={i}
-                            className={`w-1 ${
-                              token.change24h >= 0 ? "bg-success" : "bg-error"
-                            } rounded-t-sm`}
-                            style={{ height }}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
+                <div>
+                  <h3 className="font-medium text-base-content">
+                    {token.name}
+                  </h3>
+                  <p className="text-sm text-base-content/60">{token.symbol}</p>
                 </div>
+              </div>
 
-                <div className="text-right">
-                  <div className="font-medium text-base-content">
-                    {isLoading
-                      ? "Loading..."
-                      : `$${token.price.toFixed(token.price < 1 ? 4 : 2)}`}
-                  </div>
-                  <div
-                    className={`text-sm ${
-                      token.change24h >= 0 ? "text-success" : "text-error"
-                    }`}
-                  >
-                    {Math.abs(token.change24h).toFixed(2)}%
+              <div className="flex-1 mx-4 hidden md:block">
+                <div className="h-10 flex items-center">
+                  {/* Simple sparkline chart */}
+                  <div className="flex items-end h-8 space-x-1">
+                    {token.chart.map((value, i) => {
+                      const max = Math.max(...token.chart.filter((v) => v > 0));
+                      const height = max > 0 ? `${(value / max) * 100}%` : "0%";
+                      return (
+                        <div
+                          key={i}
+                          className={`w-1 ${
+                            token.change24h >= 0 ? "bg-success" : "bg-error"
+                          } rounded-t-sm`}
+                          style={{ height }}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* Network Metrics Section - slightly reduced margins */}
+              <div className="text-right">
+                <div className="font-medium text-base-content">
+                  {isLoading
+                    ? "Loading..."
+                    : `$${token.price.toFixed(token.price < 1 ? 4 : 2)}`}
+                </div>
+                <div
+                  className={`text-sm ${
+                    token.change24h >= 0 ? "text-success" : "text-error"
+                  }`}
+                >
+                  {Math.abs(token.change24h).toFixed(2)}%
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Network Metrics Section */}
           {networkMetrics && (
             <div className="mt-3 pt-3 border-t border-base-300">
               <h3 className="text-md font-medium mb-2">

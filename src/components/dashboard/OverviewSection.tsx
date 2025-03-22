@@ -205,13 +205,25 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
           priceResponse.data && priceResponse.data["avalanche-2"];
 
         if (avaxData) {
+          // Calculate the market cap change percentage, ensuring it's a valid number
+          const changeValue = avaxData.usd_24h_change;
+          const validChange =
+            !isNaN(changeValue) &&
+            changeValue !== null &&
+            changeValue !== undefined;
+
           // Set market cap
           setMarketCap({
-            value: formatCurrency(avaxData.usd_market_cap),
-            change: {
-              value: `${Math.abs(avaxData.usd_24h_change).toFixed(2)}%`,
-              isPositive: avaxData.usd_24h_change >= 0,
-            },
+            value: formatCurrency(avaxData.usd_market_cap || 0),
+            change: validChange
+              ? {
+                  value: `${Math.abs(changeValue).toFixed(2)}%`,
+                  isPositive: changeValue >= 0,
+                }
+              : {
+                  value: "0.00%",
+                  isPositive: true,
+                },
           });
         } else {
           // Set fallback market cap if data isn't available
