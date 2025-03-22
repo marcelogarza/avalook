@@ -152,10 +152,29 @@ const WatchlistPage = () => {
 
       <Tabs defaultValue="tokens" onValueChange={setActiveTab}>
         <TabsList>
+          <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="tokens">Tokens</TabsTrigger>
           <TabsTrigger value="protocols">Protocols</TabsTrigger>
-          <TabsTrigger value="alerts">Alerts</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="all" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {watchlistItems.map((item) => (
+              <TokenCard
+                key={item.id}
+                item={item}
+                onCreateAlert={() => handleCreateAlert(item)}
+              />
+            ))}
+            {protocols.map((protocol) => (
+              <ProtocolCard
+                key={protocol.id}
+                protocol={protocol}
+                onCreateAlert={() => handleCreateAlert(protocol)}
+              />
+            ))}
+          </div>
+        </TabsContent>
 
         <TabsContent value="tokens" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -180,63 +199,61 @@ const WatchlistPage = () => {
             ))}
           </div>
         </TabsContent>
+      </Tabs>
 
-        <TabsContent value="alerts" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Alerts</CardTitle>
-              <CardDescription>
-                You'll be notified when these conditions are met
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {watchlistItems
-                  .flatMap((item) =>
-                    item.alerts.map((alert) => ({ ...alert, item })),
-                  )
-                  .map((alert) => (
-                    <div
-                      key={alert.id}
-                      className="flex items-center justify-between p-4 rounded-lg border"
-                    >
-                      <div className="flex items-center gap-3">
-                        <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                        <div>
-                          <div className="font-medium">
-                            {alert.item.name} ({alert.item.symbol})
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Price {alert.condition} ${alert.value}
-                          </div>
-                        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Active Alerts</CardTitle>
+          <CardDescription>
+            You'll be notified when these conditions are met
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {watchlistItems
+              .flatMap((item) =>
+                item.alerts.map((alert) => ({ ...alert, item }))
+              )
+              .map((alert) => (
+                <div
+                  key={alert.id}
+                  className="flex items-center justify-between p-4 rounded-lg border"
+                >
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                    <div>
+                      <div className="font-medium">
+                        {alert.item.name} ({alert.item.symbol})
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button className="p-2 rounded-full hover:bg-muted">
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button className="p-2 rounded-full hover:bg-muted">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                      <div className="text-sm text-muted-foreground">
+                        Price {alert.condition} ${alert.value}
                       </div>
                     </div>
-                  ))}
-
-                {watchlistItems.flatMap((item) => item.alerts).length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <AlertTriangle className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                    <p>No alerts set up yet</p>
-                    <p className="text-sm">
-                      Create alerts for tokens or protocols to get notified of
-                      price changes
-                    </p>
                   </div>
-                )}
+                  <div className="flex items-center gap-2">
+                    <button className="p-2 rounded-full hover:bg-muted">
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button className="p-2 rounded-full hover:bg-muted">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+            {watchlistItems.flatMap((item) => item.alerts).length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <AlertTriangle className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                <p>No alerts set up yet</p>
+                <p className="text-sm">
+                  Create alerts for tokens or protocols to get notified of price
+                  changes
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Dialog open={alertDialogOpen} onOpenChange={setAlertDialogOpen}>
         <DialogContent>
@@ -323,7 +340,9 @@ const TokenCard = ({ item, onCreateAlert }: TokenCardProps) => {
             ${item.price.toFixed(item.price < 1 ? 4 : 2)}
           </div>
           <div
-            className={`flex items-center gap-1 ${item.change24h >= 0 ? "text-green-500" : "text-red-500"}`}
+            className={`flex items-center gap-1 ${
+              item.change24h >= 0 ? "text-green-500" : "text-red-500"
+            }`}
           >
             {item.change24h >= 0 ? (
               <ArrowUpRight className="h-4 w-4" />
@@ -400,7 +419,9 @@ const ProtocolCard = ({ protocol, onCreateAlert }: ProtocolCardProps) => {
             </div>
           </div>
           <div
-            className={`flex items-center gap-1 ${protocol.change24h >= 0 ? "text-green-500" : "text-red-500"}`}
+            className={`flex items-center gap-1 ${
+              protocol.change24h >= 0 ? "text-green-500" : "text-red-500"
+            }`}
           >
             {protocol.change24h >= 0 ? (
               <ArrowUpRight className="h-4 w-4" />
