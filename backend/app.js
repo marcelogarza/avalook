@@ -49,6 +49,11 @@ const cache = {
     timestamp: 0,
     expiryTime: 600000, // 10 minutes cache
   },
+  dapps: {
+    data: null,
+    timestamp: 0,
+    expiryTime: 600000, // 10 minutes cache
+  },
 };
 
 // Helper function to check if cache is valid
@@ -703,68 +708,53 @@ app.get("/api/token-price-history/:tokenId", async (req, res) => {
 // Add dapps endpoint
 app.get("/api/dapps", async (req, res) => {
   try {
-    // Return mock dapps data for the frontend
+    // Check if we have valid cached data
+    if (isCacheValid("dapps")) {
+      return res.json(cache.dapps.data);
+    }
+
+    // Fetch data from CoinGecko API
+    const response = await axios.get(
+      "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=avalanche-2,joe,pangolin,benqi&order=market_cap_desc&per_page=100&page=1&sparkline=false",
+      {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "AvaLook Dashboard Application",
+        },
+      }
+    );
+
     const dappsData = {
-      dapps: [
-        {
-          name: "Avalanche",
-          symbol: "AVAX",
-          category: "L1 Blockchain",
-          description:
-            "Avalanche is a layer one blockchain that functions as a platform for decentralized applications and custom blockchain networks.",
-          url: "https://www.avax.network/",
-          image: "https://cryptologos.cc/logos/avalanche-avax-logo.png",
-          price_usd: 19.34,
-          price_change_24h: 2.5,
-          market_cap: "$10.2B",
-          chain: "Avalanche",
-        },
-        {
-          name: "Trader Joe",
-          symbol: "JOE",
-          category: "DEX",
-          description:
-            "Trader Joe is a one-stop-shop decentralized trading platform on the Avalanche network.",
-          url: "https://traderjoexyz.com/",
-          image: "https://cryptologos.cc/logos/trader-joe-joe-logo.png",
-          price_usd: 0.19,
-          price_change_24h: 3.2,
-          market_cap: "$120M",
-          chain: "Avalanche",
-        },
-        {
-          name: "Pangolin",
-          symbol: "PNG",
-          category: "DEX",
-          description:
-            "Pangolin is a decentralized exchange (DEX) for Avalanche and Ethereum assets.",
-          url: "https://pangolin.exchange/",
-          image: "https://cryptologos.cc/logos/pangolin-png-logo.png",
-          price_usd: 0.16,
-          price_change_24h: 1.8,
-          market_cap: "$95M",
-          chain: "Avalanche",
-        },
-        {
-          name: "Benqi",
-          symbol: "QI",
-          category: "Lending",
-          description:
-            "BENQI is a non-custodial liquidity market protocol on Avalanche.",
-          url: "https://benqi.fi/",
-          image: "https://cryptologos.cc/logos/benqi-qi-logo.png",
-          price_usd: 0.008,
-          price_change_24h: -0.5,
-          market_cap: "$52M",
-          chain: "Avalanche",
-        },
-      ],
+      dapps: response.data.map((token) => ({
+        name: token.id === "avalanche-2" ? "Avalanche" : token.name,
+        symbol: token.symbol.toUpperCase(),
+        url: `https://www.coingecko.com/en/coins/${token.id}`,
+        description: `Avalanche ecosystem token with ${
+          token.market_cap_rank ? `rank #${token.market_cap_rank}` : "no rank"
+        }`,
+        category: "DeFi",
+        chain: "Avalanche",
+        market_cap: token.market_cap,
+        price_usd: token.current_price,
+        price_change_24h: token.price_change_percentage_24h,
+        image: token.image,
+      })),
     };
+
+    // Update cache
+    cache.dapps.data = dappsData;
+    cache.dapps.timestamp = Date.now();
 
     res.json(dappsData);
   } catch (error) {
-    console.error("Error serving dapps data:", error.message);
-    res.status(500).json({ message: "Error fetching dapps data" });
+    console.error("Error fetching dapps:", error.message);
+
+    if (cache.dapps.data) {
+      console.log("Returning stale cache data for dapps");
+      return res.json(cache.dapps.data);
+    }
+
+    res.status(500).json({ message: "Error fetching dapps" });
   }
 });
 
