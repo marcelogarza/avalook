@@ -18,9 +18,10 @@ interface NewsItem {
 
 interface NewsFeedSectionProps {
   news?: NewsItem[];
+  refreshTrigger?: number;
 }
 
-const NewsFeedSection = ({ news: propNews }: NewsFeedSectionProps) => {
+const NewsFeedSection = ({ news: propNews, refreshTrigger = 0 }: NewsFeedSectionProps) => {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [news, setNews] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,118 +36,120 @@ const NewsFeedSection = ({ news: propNews }: NewsFeedSectionProps) => {
     }
 
     // Otherwise fetch from API
-    const fetchNews = async () => {
-      try {
-        setIsLoading(true);
-        const response = await axios.get("http://localhost:5001/api/news");
-
-        if (response.data && response.data.results) {
-          // Transform API data to match our NewsItem structure
-          const transformedNews = response.data.results
-            .slice(0, 5) // Limit to 5 news items for the dashboard
-            .map((item: any, index: number) => {
-              // Extract domain from source URL for the source name
-              const sourceDomain =
-                item.source?.domain || item.source?.title || "News Source";
-
-              // Determine time ago string
-              const getTimeAgo = (published_at: string) => {
-                if (!published_at) return "Recently";
-
-                const date = new Date(published_at);
-                const now = new Date();
-                const diffMs = now.getTime() - date.getTime();
-                const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
-
-                if (diffHrs < 1) return "Just now";
-                if (diffHrs < 24) return `${diffHrs}h ago`;
-                const diffDays = Math.floor(diffHrs / 24);
-                return `${diffDays}d ago`;
-              };
-
-              // Sanitize and truncate summary text
-              const getSanitizedSummary = (text: string) => {
-                if (!text) return "News update from the cryptocurrency world.";
-                // Remove any HTML tags that might be in the content
-                const sanitized = text.replace(/<[^>]*>?/gm, "");
-                // Truncate to a reasonable length for summary
-                return sanitized.length > 200
-                  ? sanitized.substring(0, 200) + "..."
-                  : sanitized;
-              };
-
-              // Map API categories to our categories
-              const getCategoryFromTags = (currencies: any[], tags: any[]) => {
-                // Check if related to Avalanche first
-                const isAvax = currencies?.some(
-                  (c: any) =>
-                    c.code?.toLowerCase() === "avax" ||
-                    c.title?.toLowerCase().includes("avalanche")
-                );
-
-                if (isAvax) return "Protocol";
-
-                // Otherwise map based on tags
-                if (
-                  tags?.some((t: any) =>
-                    t.title?.toLowerCase().includes("defi")
-                  )
-                )
-                  return "DeFi";
-                if (
-                  tags?.some((t: any) => t.title?.toLowerCase().includes("nft"))
-                )
-                  return "NFTs";
-                if (
-                  tags?.some((t: any) =>
-                    t.title?.toLowerCase().includes("governance")
-                  )
-                )
-                  return "Governance";
-
-                // Default category
-                return ["Protocol", "DeFi", "NFTs", "Governance"][
-                  Math.floor(Math.random() * 4)
-                ];
-              };
-
-              return {
-                id: `${index + 1}`,
-                title: item.title || "Crypto News Update",
-                source: sourceDomain,
-                date: getTimeAgo(item.published_at),
-                category: getCategoryFromTags(item.currencies, item.tags),
-                summary: getSanitizedSummary(item.body || item.description),
-                url: item.url || "#",
-              };
-            });
-
-          setNews(transformedNews);
-        } else {
-          // Fallback to default news if API response is invalid
-          setNews([]);
-        }
-      } catch (err) {
-        console.error("Error fetching news:", err);
-        setError("Failed to load news");
-        // Fallback to default data
-        setNews([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchNews();
-  }, [propNews]);
+  }, [propNews, refreshTrigger]); // Also refresh when refreshTrigger changes
+
+  const fetchNews = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get("http://localhost:5001/api/news");
+
+      if (response.data && response.data.results) {
+        // Transform API data to match our NewsItem structure
+        const transformedNews = response.data.results
+          // Removed .slice(0, 5) to display all news items
+          .map((item: any, index: number) => {
+            // Extract domain from source URL for the source name
+            const sourceDomain =
+              item.source?.domain || item.source?.title || "News Source";
+
+            // Determine time ago string
+            const getTimeAgo = (published_at: string) => {
+              if (!published_at) return "Recently";
+
+              const date = new Date(published_at);
+              const now = new Date();
+              const diffMs = now.getTime() - date.getTime();
+              const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+
+              if (diffHrs < 1) return "Just now";
+              if (diffHrs < 24) return `${diffHrs}h ago`;
+              const diffDays = Math.floor(diffHrs / 24);
+              return `${diffDays}d ago`;
+            };
+
+            // Sanitize and truncate summary text
+            const getSanitizedSummary = (text: string) => {
+              if (!text) return "News update from the cryptocurrency world.";
+              // Remove any HTML tags that might be in the content
+              const sanitized = text.replace(/<[^>]*>?/gm, "");
+              // Truncate to a reasonable length for summary
+              return sanitized.length > 200
+                ? sanitized.substring(0, 200) + "..."
+                : sanitized;
+            };
+
+            // Map API categories to our categories
+            const getCategoryFromTags = (currencies: any[], tags: any[]) => {
+              // Check if related to Avalanche first
+              const isAvax = currencies?.some(
+                (c: any) =>
+                  c.code?.toLowerCase() === "avax" ||
+                  c.title?.toLowerCase().includes("avalanche")
+              );
+
+              if (isAvax) return "Protocol";
+
+              // Otherwise map based on tags
+              if (
+                tags?.some((t: any) =>
+                  t.title?.toLowerCase().includes("defi")
+                )
+              )
+                return "DeFi";
+              if (
+                tags?.some((t: any) => t.title?.toLowerCase().includes("nft"))
+              )
+                return "NFTs";
+              if (
+                tags?.some((t: any) =>
+                  t.title?.toLowerCase().includes("governance")
+                )
+              )
+                return "Governance";
+
+              // Default category
+              return ["Protocol", "DeFi", "NFTs", "Governance"][
+                Math.floor(Math.random() * 4)
+              ];
+            };
+
+            return {
+              id: `${index + 1}`,
+              title: item.title || "Crypto News Update",
+              source: sourceDomain,
+              date: getTimeAgo(item.published_at),
+              category: getCategoryFromTags(item.currencies, item.tags),
+              summary: getSanitizedSummary(item.body || item.description),
+              url: item.url || "#",
+            };
+          });
+
+        setNews(transformedNews);
+      } else {
+        // Fallback to default news if API response is invalid
+        setNews([]);
+      }
+    } catch (err) {
+      console.error("Error fetching news:", err);
+      setError("Failed to load news");
+      // Fallback to default data
+      setNews([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getFilteredNews = () => {
-    if (activeCategory === "all") {
-      return news;
-    } else {
-      return news.filter(
-        (item) => item.category.toLowerCase() === activeCategory.toLowerCase()
-      );
-    }
+    // First get news filtered by category
+    const categoryFiltered = activeCategory === "all"
+      ? news
+      : news.filter(item => item.category.toLowerCase() === activeCategory.toLowerCase());
+    
+    // Then limit the number of items to display to match the container size
+    // If in "all" view, show 4-5 items, but in category view show up to 8 items
+    const limit = activeCategory === "all" ? 5 : 8;
+    return categoryFiltered.slice(0, limit);
   };
 
   const filteredNews = getFilteredNews();
@@ -211,7 +214,7 @@ interface NewsCardProps {
 
 const NewsCard = ({ item }: NewsCardProps) => {
   // Truncate long titles
-  const truncateTitle = (title: string, maxLength = 70) => {
+  const truncateTitle = (title: string, maxLength = 60) => {
     if (!title) return "Crypto News Update";
     return title.length > maxLength
       ? title.substring(0, maxLength) + "..."
@@ -219,8 +222,8 @@ const NewsCard = ({ item }: NewsCardProps) => {
   };
 
   return (
-    <div className="p-4 border border-base-300 rounded-lg hover:bg-base-200 transition-colors">
-      <div className="flex justify-between items-start mb-2">
+    <div className="p-3 border border-base-300 rounded-lg hover:bg-base-200 transition-colors">
+      <div className="flex justify-between items-start mb-1">
         <h3 className="font-medium text-sm text-base-content line-clamp-2">
           <a
             href={
@@ -244,7 +247,7 @@ const NewsCard = ({ item }: NewsCardProps) => {
           {item.category}
         </Badge>
       </div>
-      <p className="text-sm text-base-content/70 mb-3 line-clamp-2">
+      <p className="text-xs text-base-content/70 mb-2 line-clamp-1">
         {item.summary}
       </p>
       <div className="flex items-center text-xs text-base-content/70">

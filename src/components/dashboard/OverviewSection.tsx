@@ -196,211 +196,129 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
   const fetchNetworkData = async () => {
     setRefreshing(true);
     try {
-      // Fetch market data
-      try {
-        const priceResponse = await axios.get(
-          "http://localhost:5001/api/token-prices"
-        );
-        const avaxData =
-          priceResponse.data && priceResponse.data["avalanche-2"];
+      // Define all API endpoints
+      const endpoints = {
+        marketCap: "http://localhost:5001/api/token-prices",
+        tps: "http://localhost:5001/api/tps",
+        volume: "http://localhost:5001/api/volume",
+        gas: "http://localhost:5001/api/gas",
+        active: "http://localhost:5001/api/active"
+      };
 
-        if (avaxData) {
-          // Calculate the market cap change percentage, ensuring it's a valid number
-          const changeValue = avaxData.usd_24h_change;
-          const validChange =
-            !isNaN(changeValue) &&
-            changeValue !== null &&
-            changeValue !== undefined;
+      // Fetch all data in parallel
+      const [marketCapResponse, tpsResponse, volumeResponse, gasResponse, activeResponse] = 
+        await Promise.all([
+          axios.get(endpoints.marketCap).catch(err => ({ data: null, error: err })),
+          axios.get(endpoints.tps).catch(err => ({ data: null, error: err })),
+          axios.get(endpoints.volume).catch(err => ({ data: null, error: err })),
+          axios.get(endpoints.gas).catch(err => ({ data: null, error: err })),
+          axios.get(endpoints.active).catch(err => ({ data: null, error: err }))
+        ]);
 
-          // Set market cap
-          setMarketCap({
-            value: formatCurrency(avaxData.usd_market_cap || 0),
-            change: validChange
-              ? {
-                  value: `${Math.abs(changeValue).toFixed(2)}%`,
-                  isPositive: changeValue >= 0,
-                }
-              : {
-                  value: "0.00%",
-                  isPositive: true,
-                },
-          });
-        } else {
-          // Set fallback market cap if data isn't available
-          setMarketCap({
-            value: "N/A",
-            change: {
-              value: "N/A",
-              isPositive: true,
-            },
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching market data:", error);
-        // Set fallback market cap
+      // Process market cap data
+      if (marketCapResponse.data && marketCapResponse.data["avalanche-2"]) {
+        const avaxData = marketCapResponse.data["avalanche-2"];
+        const changeValue = avaxData.usd_24h_change;
+        const validChange = !isNaN(changeValue) && changeValue !== null && changeValue !== undefined;
+
+        setMarketCap({
+          value: formatCurrency(avaxData.usd_market_cap || 0),
+          change: validChange
+            ? {
+                value: `${Math.abs(changeValue).toFixed(2)}%`,
+                isPositive: changeValue >= 0,
+              }
+            : {
+                value: "0.00%",
+                isPositive: true,
+              },
+        });
+      } else {
         setMarketCap({
           value: "N/A",
-          change: {
-            value: "N/A",
-            isPositive: true,
-          },
+          change: { value: "N/A", isPositive: true },
         });
       }
       setLoading((prev) => ({ ...prev, marketCap: false }));
 
-      // Fetch TPS
-      try {
-        const tpsResponse = await axios.get("http://localhost:5001/api/tps");
-        if (tpsResponse.data) {
-          // Use the value directly from the API
-          const tpsValue = parseFloat(tpsResponse.data.value) || 0;
-
-          setTps({
-            value: formatNumber(tpsValue), // Use the formatting function for consistency
-            change: {
-              value: "N/A",
-              isPositive: true,
-            },
-          });
-        } else {
-          // Set fallback TPS
-          setTps({
-            value: "N/A",
-            change: {
-              value: "N/A",
-              isPositive: true,
-            },
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching TPS:", error);
-        // Set fallback TPS
+      // Process TPS data
+      if (tpsResponse.data) {
+        const tpsValue = parseFloat(tpsResponse.data.value) || 0;
+        setTps({
+          value: formatNumber(tpsValue),
+          change: { value: "N/A", isPositive: true },
+        });
+      } else {
         setTps({
           value: "N/A",
-          change: {
-            value: "N/A",
-            isPositive: true,
-          },
+          change: { value: "N/A", isPositive: true },
         });
       }
       setLoading((prev) => ({ ...prev, tps: false }));
 
-      // Fetch transaction volume data
-      try {
-        const volumeResponse = await axios.get(
-          "http://localhost:5001/api/volume"
-        );
-        if (volumeResponse.data) {
-          // Use the value directly from the API
-          const volumeValue = parseInt(volumeResponse.data.value) || 0;
-
-          setTransactionsVolume({
-            value: formatNumber(volumeValue),
-            change: {
-              value: "N/A",
-              isPositive: true,
-            },
-          });
-        } else {
-          // Set fallback transaction volume
-          setTransactionsVolume({
-            value: "N/A",
-            change: {
-              value: "N/A",
-              isPositive: true,
-            },
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching transaction volume:", error);
-        // Set fallback transaction volume
+      // Process transaction volume data
+      if (volumeResponse.data) {
+        const volumeValue = parseInt(volumeResponse.data.value) || 0;
+        setTransactionsVolume({
+          value: formatNumber(volumeValue),
+          change: { value: "N/A", isPositive: true },
+        });
+      } else {
         setTransactionsVolume({
           value: "N/A",
-          change: {
-            value: "N/A",
-            isPositive: true,
-          },
+          change: { value: "N/A", isPositive: true },
         });
       }
       setLoading((prev) => ({ ...prev, transactionsVolume: false }));
 
-      // Fetch gas fees data
-      try {
-        const gasResponse = await axios.get("http://localhost:5001/api/gas");
-        if (gasResponse.data) {
-          // Use the value directly from the API - ensure it's treated as a number
-          const gasValue = parseInt(gasResponse.data.value) || 0;
-
-          setGasFees({
-            value: formatNumber(gasValue),
-            change: {
-              value: "N/A",
-              isPositive: true,
-            },
-          });
-        } else {
-          // Set fallback gas fees
-          setGasFees({
-            value: "N/A",
-            change: {
-              value: "N/A",
-              isPositive: true,
-            },
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching gas fees:", error);
-        // Set fallback gas fees
+      // Process gas fees data
+      if (gasResponse.data) {
+        const gasValue = parseInt(gasResponse.data.value) || 0;
+        setGasFees({
+          value: formatNumber(gasValue),
+          change: { value: "N/A", isPositive: true },
+        });
+      } else {
         setGasFees({
           value: "N/A",
-          change: {
-            value: "N/A",
-            isPositive: true,
-          },
+          change: { value: "N/A", isPositive: true },
         });
       }
       setLoading((prev) => ({ ...prev, gasFees: false }));
 
-      // Fetch active addresses data
-      try {
-        const activeResponse = await axios.get(
-          "http://localhost:5001/api/active"
-        );
-        if (activeResponse.data) {
-          // Use the value directly from the API
-          const activeValue = parseInt(activeResponse.data.value) || 0;
-
-          setActiveAddresses({
-            value: formatNumber(activeValue),
-            change: {
-              value: "N/A",
-              isPositive: true,
-            },
-          });
-        } else {
-          // Set fallback active addresses
-          setActiveAddresses({
-            value: "N/A",
-            change: {
-              value: "N/A",
-              isPositive: true,
-            },
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching active addresses:", error);
-        // Set fallback active addresses
+      // Process active addresses data
+      if (activeResponse.data) {
+        const activeValue = parseInt(activeResponse.data.value) || 0;
+        setActiveAddresses({
+          value: formatNumber(activeValue),
+          change: { value: "N/A", isPositive: true },
+        });
+      } else {
         setActiveAddresses({
           value: "N/A",
-          change: {
-            value: "N/A",
-            isPositive: true,
-          },
+          change: { value: "N/A", isPositive: true },
         });
       }
       setLoading((prev) => ({ ...prev, activeAddresses: false }));
+
     } catch (error) {
       console.error("Error fetching network data:", error);
+      // Set fallback values for all metrics
+      setMarketCap({ value: "N/A", change: { value: "N/A", isPositive: true } });
+      setTps({ value: "N/A", change: { value: "N/A", isPositive: true } });
+      setTransactionsVolume({ value: "N/A", change: { value: "N/A", isPositive: true } });
+      setGasFees({ value: "N/A", change: { value: "N/A", isPositive: true } });
+      setActiveAddresses({ value: "N/A", change: { value: "N/A", isPositive: true } });
+      
+      // Mark all as loaded
+      setLoading((prev) => ({ 
+        ...prev, 
+        marketCap: false,
+        tps: false,
+        transactionsVolume: false,
+        gasFees: false,
+        activeAddresses: false
+      }));
     } finally {
       setRefreshing(false);
     }
@@ -464,7 +382,6 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
             isPositive: token.change >= 0,
           }}
           isLoading={loading.tokens}
-          description="24h price change"
           imageUrl={token.image}
         />
       ))}

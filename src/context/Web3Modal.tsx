@@ -1,7 +1,7 @@
 "use client";
 
 import { createWeb3Modal, defaultConfig } from "@web3modal/ethers5/react";
-import { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { getCurrentTheme } from "../lib/theme";
 
 // IMPORTANT: Using the provided projectId, but you should get your own from WalletConnect Cloud
@@ -35,14 +35,18 @@ const ethersConfig = defaultConfig({
 });
 
 // Create Web3Modal instance
-createWeb3Modal({
-  ethersConfig,
-  chains: [mainnet],
-  projectId,
-  enableAnalytics: true,
-  enableOnramp: true,
-  themeMode: "light",
-});
+try {
+  createWeb3Modal({
+    ethersConfig,
+    chains: [mainnet],
+    projectId,
+    enableAnalytics: true,
+    enableOnramp: true,
+    themeMode: "light",
+  });
+} catch (error) {
+  console.error("Failed to create Web3Modal:", error);
+}
 
 interface Web3ModalProps {
   children: ReactNode;
@@ -57,8 +61,47 @@ declare global {
   }
 }
 
+// Simple error boundary component
+class ErrorBoundary extends React.Component<
+  { children: ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("Web3Modal error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="text-red-500 p-4">
+          <h2>Something went wrong with Web3Modal.</h2>
+          <p>{this.state.error?.message || "Unknown error"}</p>
+          <button 
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="bg-blue-500 text-white p-2 rounded mt-2"
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 export function Web3Modal({ children }: Web3ModalProps) {
   const [mounted, setMounted] = useState(false);
+  const [themeError, setThemeError] = useState<Error | null>(null);
 
   // This effect ensures theme syncing between your app and Web3Modal
   useEffect(() => {
@@ -76,6 +119,7 @@ export function Web3Modal({ children }: Web3ModalProps) {
         }
       } catch (error) {
         console.error("Failed to sync theme with Web3Modal:", error);
+        setThemeError(error instanceof Error ? error : new Error(String(error)));
       }
     };
 
@@ -105,5 +149,23 @@ export function Web3Modal({ children }: Web3ModalProps) {
   // Only render children when mounted to avoid hydration issues
   if (!mounted) return null;
 
-  return children;
+  return (
+    <ErrorBoundary>
+      {themeError ? (
+        <div className="min-h-screen flex items-center justify-center bg-base-100 text-base-content">
+          <div>
+            <p>Failed to initialize Web3Modal: {themeError.message}</p>
+            <button 
+              onClick={() => setThemeError(null)}
+              className="bg-blue-500 text-white p-2 rounded mt-2"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
+    </ErrorBoundary>
+  );
 }

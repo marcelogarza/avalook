@@ -19,10 +19,12 @@ export interface TokenPriceHistory {
 }
 
 export interface NetworkMetrics {
-  tps: number;
-  validators: number;
-  totalTransactions: number;
-  avgBlockTime: number;
+  tps: number | string;
+  validators: number | string;
+  totalTransactions: number | string;
+  avgBlockTime: number | string;
+  gasUsed: number | string;
+  activeAddresses: number | string;
   [key: string]: any;
 }
 

@@ -7,10 +7,6 @@ interface OverviewCardProps {
   value: string;
   icon: LucideIcon;
   iconColorClass: string;
-  change?: {
-    value: string;
-    isPositive: boolean;
-  };
   description?: string;
   isLoading?: boolean;
   imageUrl?: string;
@@ -21,7 +17,6 @@ const OverviewCard = ({
   value,
   icon: Icon,
   iconColorClass,
-  change,
   description,
   isLoading = false,
   imageUrl,
@@ -29,7 +24,7 @@ const OverviewCard = ({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <CardTitle className="text-base font-medium">{title}</CardTitle>
         {imageUrl ? (
           <img src={imageUrl} alt={title} className="h-5 w-5 rounded-full" />
         ) : (
@@ -44,31 +39,12 @@ const OverviewCard = ({
           </div>
         ) : (
           <>
-            <div className="text-2xl font-bold">{value}</div>
-            {change && change.value && change.value !== "N/A" && !change.value.includes("NaN") && (
-              <p className="text-xs text-muted-foreground">
-                <span
-                  className={
-                    change.isPositive ? "text-green-500" : "text-red-500"
-                  }
-                >
-                  {change.isPositive ? "+" : "-"}
-                  {change.value}
-                </span>{" "}
-                {description || "from last period"}
-              </p>
-            )}
-            {(change && change.value === "N/A" && (
-              <p className="text-xs text-muted-foreground">
-                <span className="text-base-content/70">
-                  {change.value}
-                </span>{" "}
-                {description || "from last period"}
-              </p>
-            ))}
-            {!change && description && (
-              <p className="text-xs text-muted-foreground">{description}</p>
-            )}
+            <div className="text-3xl font-bold">{value}</div>
+            {value === "N/A" ? (
+              <p className="text-sm text-muted-foreground">Unavailable</p>
+            ) : description ? (
+              <p className="text-sm text-muted-foreground">{description}</p>
+            ) : null}
           </>
         )}
       </CardContent>

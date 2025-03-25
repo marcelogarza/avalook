@@ -15,6 +15,8 @@ export default function Web3Connect() {
   const { open: isModalOpen } = useWeb3ModalState();
   const { isConnected } = useWeb3ModalAccount();
   const [currentTheme, setCurrentTheme] = useState<string>("light");
+  const [connectError, setConnectError] = useState<Error | null>(null);
+  const [isAttempting, setIsAttempting] = useState(false);
 
   // Track theme changes
   useEffect(() => {
@@ -36,7 +38,23 @@ export default function Web3Connect() {
   // Debug connection state changes
   useEffect(() => {
     console.log("Web3Connect: Modal state:", { isModalOpen, isConnected });
-  }, [isModalOpen, isConnected]);
+    if (!isModalOpen && isAttempting) {
+      setIsAttempting(false);
+    }
+  }, [isModalOpen, isConnected, isAttempting]);
+
+  const handleOpenModal = async () => {
+    try {
+      setConnectError(null);
+      setIsAttempting(true);
+      console.log("Opening Web3Modal");
+      await open();
+    } catch (error) {
+      console.error("Error opening Web3Modal:", error);
+      setConnectError(error instanceof Error ? error : new Error(String(error)));
+      setIsAttempting(false);
+    }
+  };
 
   return (
     <div className="flex items-center gap-2">
@@ -55,16 +73,17 @@ export default function Web3Connect() {
       </Button>
 
       <Button
-        onClick={() => {
-          console.log("Opening Web3Modal");
-          open();
-        }}
+        onClick={handleOpenModal}
         className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 text-base"
+        disabled={isAttempting}
       >
-        {isConnected ? "Manage Wallet" : "Connect Wallet"}
+        {isConnected ? "Manage Wallet" : isAttempting ? "Connecting..." : "Connect Wallet"}
       </Button>
-      {/* Hidden debugging element */}
-      <div style={{ display: "none" }}>Modal open: {String(isModalOpen)}</div>
+      {connectError && (
+        <div className="text-red-500 text-sm mt-2">
+          Failed to connect: {connectError.message}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Routes, Route, Navigate, useRoutes } from "react-router-dom";
 import { Web3Modal } from "./context/Web3Modal";
 import { useWeb3ModalAccount } from "@web3modal/ethers5/react";
@@ -19,6 +19,8 @@ import Home from "./components/home";
 
 function App() {
   const { isConnected } = useWeb3ModalAccount();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Add an effect to check for wallet connection at app startup
   useEffect(() => {
@@ -30,12 +32,24 @@ function App() {
           await window.ethereum.request({ method: "eth_accounts" });
         } catch (error) {
           console.error("Error checking for wallet connection:", error);
+          setError(error);
+        } finally {
+          // Set loading to false in all cases after a short delay
+          setTimeout(() => setIsLoading(false), 500);
         }
+      } else {
+        // No ethereum provider available
+        setIsLoading(false);
       }
     };
 
     checkWalletConnection();
   }, []);
+
+  // Show a loading indicator while checking wallet connection
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center bg-base-100 text-base-content">Loading...</div>;
+  }
 
   return (
     <Web3Modal>
