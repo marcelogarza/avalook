@@ -35,7 +35,7 @@ interface DashboardHeaderProps {
 
 const DashboardHeader = ({
   onSettingsClick = () => {},
-  username = "John Doe",
+  username = "User",
   avatarUrl = "",
   className = "",
 }: DashboardHeaderProps) => {

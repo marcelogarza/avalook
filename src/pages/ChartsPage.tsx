@@ -25,7 +25,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 
 // API base URL - use environment variable if available
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5001";
@@ -95,74 +95,10 @@ const ChartsPage = () => {
 
   // Generate mock data for fallback or when API fails
   const generateMockData = (range: string) => {
-    const now = new Date();
-    let days: number;
-
-    switch (range) {
-      case "24h":
-        days = 24; // Use hours for 24h view
-        break;
-      case "7d":
-        days = 7;
-        break;
-      case "30d":
-        days = 30;
-        break;
-      case "90d":
-        days = 90;
-        break;
-      case "1y":
-        days = 365;
-        break;
-      default:
-        days = 7;
-    }
-
-    // For 24h view, generate hourly data points
-    const interval = range === "24h" ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
-    const pointCount = range === "24h" ? 24 : days;
-
-    // Transaction volume mock data
-    const mockTransactionData = Array(pointCount)
-      .fill(null)
-      .map((_, i) => {
-        const date = new Date(now.getTime() - (pointCount - 1 - i) * interval);
-        return {
-          timestamp: date.toISOString(),
-          value: 300000 + Math.floor(Math.random() * 100000),
-          date: formatDate(date.toISOString(), range),
-        };
-      });
-
-    // Gas fees mock data
-    const mockGasData = Array(pointCount)
-      .fill(null)
-      .map((_, i) => {
-        const date = new Date(now.getTime() - (pointCount - 1 - i) * interval);
-        return {
-          timestamp: date.toISOString(),
-          average: 0.03 + Math.random() * 0.05,
-          max: 0.1 + Math.random() * 0.1,
-          date: formatDate(date.toISOString(), range),
-        };
-      });
-
-    // Active addresses mock data
-    const mockAddressData = Array(pointCount)
-      .fill(null)
-      .map((_, i) => {
-        const date = new Date(now.getTime() - (pointCount - 1 - i) * interval);
-        return {
-          timestamp: date.toISOString(),
-          active: 45000 + Math.floor(Math.random() * 15000),
-          date: formatDate(date.toISOString(), range),
-        };
-      });
-
     return {
-      transactions: mockTransactionData,
-      fees: mockGasData,
-      addresses: mockAddressData,
+      transactions: [],
+      fees: [],
+      addresses: [],
     };
   };
 
@@ -263,16 +199,8 @@ const ChartsPage = () => {
   // Fetch network comparison data
   const fetchNetworkComparisonData = async () => {
     try {
-      // This is a placeholder for a real API endpoint that would provide comparative data
-      // For now, we'll use static data
-      const mockComparisonData = [
-        { name: "Avalanche", tps: 4500 },
-        { name: "Ethereum", tps: 15 },
-        { name: "Solana", tps: 65000 },
-        { name: "Bitcoin", tps: 7 },
-      ];
-
-      setNetworkComparison(mockComparisonData);
+      // Return empty array instead of mock data
+      setNetworkComparison([]);
       return true;
     } catch (error) {
       console.error("Error fetching network comparison data:", error);
@@ -283,17 +211,8 @@ const ChartsPage = () => {
   // Fetch subnet data
   const fetchSubnetData = async () => {
     try {
-      // This is a placeholder for a real API endpoint that would provide subnet data
-      // For now, we'll use static data
-      const mockSubnetData = [
-        { name: "C-Chain", value: 400 },
-        { name: "X-Chain", value: 300 },
-        { name: "P-Chain", value: 200 },
-        { name: "DeFi Subnet", value: 150 },
-        { name: "Gaming Subnet", value: 100 },
-      ];
-
-      setSubnetData(mockSubnetData);
+      // Return empty array instead of mock data
+      setSubnetData([]);
       return true;
     } catch (error) {
       console.error("Error fetching subnet data:", error);
@@ -540,7 +459,7 @@ const ChartsPage = () => {
                 <div className="flex justify-center items-center h-full">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
-              ) : (
+              ) : networkComparison.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={networkComparison}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -555,6 +474,13 @@ const ChartsPage = () => {
                     />
                   </BarChart>
                 </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+                    <p className="text-muted-foreground">No comparison data available</p>
+                  </div>
+                </div>
               )}
             </div>
           </CardContent>
@@ -573,10 +499,17 @@ const ChartsPage = () => {
                 <div className="flex justify-center items-center h-full">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
-              ) : (
+              ) : subnetData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChartComponent data={subnetData} />
                 </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+                    <p className="text-muted-foreground">No subnet data available</p>
+                  </div>
+                </div>
               )}
             </div>
           </CardContent>

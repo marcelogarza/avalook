@@ -43,87 +43,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const watchlistItems = [
-  {
-    id: "avax",
-    name: "Avalanche",
-    symbol: "AVAX",
-    price: 28.45,
-    change24h: 5.67,
-    alerts: [
-      { id: "a1", type: "price", condition: "above", value: 30, active: true },
-    ],
-    chart: [
-      { time: "1d", price: 26.45 },
-      { time: "2d", price: 27.12 },
-      { time: "3d", price: 26.89 },
-      { time: "4d", price: 27.45 },
-      { time: "5d", price: 28.01 },
-      { time: "6d", price: 27.65 },
-      { time: "7d", price: 28.45 },
-    ],
-  },
-  {
-    id: "png",
-    name: "Pangolin",
-    symbol: "PNG",
-    price: 0.12,
-    change24h: 1.23,
-    alerts: [],
-    chart: [
-      { time: "1d", price: 0.118 },
-      { time: "2d", price: 0.119 },
-      { time: "3d", price: 0.121 },
-      { time: "4d", price: 0.12 },
-      { time: "5d", price: 0.118 },
-      { time: "6d", price: 0.119 },
-      { time: "7d", price: 0.12 },
-    ],
-  },
-  {
-    id: "gmx",
-    name: "GMX",
-    symbol: "GMX",
-    price: 45.67,
-    change24h: -0.45,
-    alerts: [
-      { id: "a2", type: "price", condition: "below", value: 40, active: true },
-    ],
-    chart: [
-      { time: "1d", price: 45.89 },
-      { time: "2d", price: 45.76 },
-      { time: "3d", price: 45.45 },
-      { time: "4d", price: 45.34 },
-      { time: "5d", price: 45.56 },
-      { time: "6d", price: 45.78 },
-      { time: "7d", price: 45.67 },
-    ],
-  },
-];
-
-const protocols = [
-  {
-    id: "trader-joe",
-    name: "Trader Joe",
-    category: "DEX",
-    tvl: 245_000_000,
-    change24h: 2.34,
-  },
-  {
-    id: "benqi",
-    name: "BENQI",
-    category: "Lending",
-    tvl: 125_000_000,
-    change24h: 1.56,
-  },
-  {
-    id: "platypus",
-    name: "Platypus Finance",
-    category: "Stablecoin DEX",
-    tvl: 95_000_000,
-    change24h: -0.78,
-  },
-];
+const watchlistItems = [];
+const protocols = [];
 
 const WatchlistPage = () => {
   const [activeTab, setActiveTab] = useState("tokens");

@@ -39,7 +39,7 @@ interface WatchlistSectionProps {
 }
 
 const WatchlistSection = ({
-  watchlistItems = defaultWatchlistItems,
+  watchlistItems = [],
 }: WatchlistSectionProps) => {
   const [items, setItems] = useState<WatchlistItem[]>(watchlistItems);
   const [searchQuery, setSearchQuery] = useState("");
@@ -231,37 +231,6 @@ const WatchlistSection = ({
   );
 };
 
-const defaultWatchlistItems: WatchlistItem[] = [
-  {
-    id: "1",
-    name: "Trader Joe",
-    type: "Protocol",
-    price: 0.42,
-  },
-  {
-    id: "2",
-    name: "AVAX",
-    type: "Token",
-    price: 28.45,
-  },
-  {
-    id: "3",
-    name: "Pangolin",
-    type: "Protocol",
-    price: 0.03,
-  },
-  {
-    id: "4",
-    name: "GMX",
-    type: "Token",
-    price: 42.67,
-  },
-  {
-    id: "5",
-    name: "Platypus Finance",
-    type: "Protocol",
-    price: 0.12,
-  },
-];
+const defaultWatchlistItems: WatchlistItem[] = [];
 
 export default WatchlistSection;

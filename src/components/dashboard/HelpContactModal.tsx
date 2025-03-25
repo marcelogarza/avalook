@@ -40,6 +40,16 @@ const HelpContactModal = ({ open, onOpenChange }: HelpContactModalProps) => {
     }, 3000);
   };
 
+  // Reset form when modal is opened
+  React.useEffect(() => {
+    if (open) {
+      setEmail("");
+      setSubject("");
+      setMessage("");
+      setSubmitSuccess(false);
+    }
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-base-100 text-base-content max-w-md border border-base-300">

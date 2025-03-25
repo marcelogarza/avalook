@@ -92,10 +92,7 @@ const TokensPage = () => {
                 change24h: tokenData.usd_24h_change || 0,
                 marketCap: tokenData.usd_market_cap || 0,
                 volume24h: tokenData.usd_24h_vol || 0,
-                chart: Array.from(
-                  { length: 7 },
-                  (_, i) => tokenData.usd * (0.95 + Math.random() * 0.1)
-                ),
+                chart: [], // Empty array instead of random data
                 // Add data from dapps endpoint if available
                 image: dappData?.image || "",
                 url:
@@ -124,10 +121,7 @@ const TokensPage = () => {
                 change24h: dapp.price_change_24h || 0,
                 marketCap: dapp.market_cap || 0,
                 volume24h: 0, // Volume data might not be available
-                chart: Array.from(
-                  { length: 7 },
-                  (_, i) => dapp.price_usd * (0.95 + Math.random() * 0.1)
-                ),
+                chart: [], // Empty array instead of random data
                 url: dapp.url,
                 image: dapp.image,
                 description: dapp.description,

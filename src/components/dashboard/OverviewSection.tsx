@@ -228,9 +228,9 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
         } else {
           // Set fallback market cap if data isn't available
           setMarketCap({
-            value: "$10.2B",
+            value: "N/A",
             change: {
-              value: "1.2%",
+              value: "N/A",
               isPositive: true,
             },
           });
@@ -239,9 +239,9 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
         console.error("Error fetching market data:", error);
         // Set fallback market cap
         setMarketCap({
-          value: "$10.2B",
+          value: "N/A",
           change: {
-            value: "1.2%",
+            value: "N/A",
             isPositive: true,
           },
         });
@@ -258,16 +258,16 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
           setTps({
             value: formatNumber(tpsValue), // Use the formatting function for consistency
             change: {
-              value: "0.3%",
+              value: "N/A",
               isPositive: true,
             },
           });
         } else {
           // Set fallback TPS
           setTps({
-            value: "4.2K",
+            value: "N/A",
             change: {
-              value: "0.3%",
+              value: "N/A",
               isPositive: true,
             },
           });
@@ -276,9 +276,9 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
         console.error("Error fetching TPS:", error);
         // Set fallback TPS
         setTps({
-          value: "4.2K",
+          value: "N/A",
           change: {
-            value: "0.3%",
+            value: "N/A",
             isPositive: true,
           },
         });
@@ -297,16 +297,16 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
           setTransactionsVolume({
             value: formatNumber(volumeValue),
             change: {
-              value: "5.2%",
+              value: "N/A",
               isPositive: true,
             },
           });
         } else {
           // Set fallback transaction volume
           setTransactionsVolume({
-            value: "1.2M",
+            value: "N/A",
             change: {
-              value: "5.2%",
+              value: "N/A",
               isPositive: true,
             },
           });
@@ -315,9 +315,9 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
         console.error("Error fetching transaction volume:", error);
         // Set fallback transaction volume
         setTransactionsVolume({
-          value: "1.2M",
+          value: "N/A",
           change: {
-            value: "5.2%",
+            value: "N/A",
             isPositive: true,
           },
         });
@@ -334,17 +334,17 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
           setGasFees({
             value: formatNumber(gasValue),
             change: {
-              value: "2.1%",
-              isPositive: false,
+              value: "N/A",
+              isPositive: true,
             },
           });
         } else {
           // Set fallback gas fees
           setGasFees({
-            value: "1.2M",
+            value: "N/A",
             change: {
-              value: "2.1%",
-              isPositive: false,
+              value: "N/A",
+              isPositive: true,
             },
           });
         }
@@ -352,10 +352,10 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
         console.error("Error fetching gas fees:", error);
         // Set fallback gas fees
         setGasFees({
-          value: "1.2M",
+          value: "N/A",
           change: {
-            value: "2.1%",
-            isPositive: false,
+            value: "N/A",
+            isPositive: true,
           },
         });
       }
@@ -373,16 +373,16 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
           setActiveAddresses({
             value: formatNumber(activeValue),
             change: {
-              value: "3.7%",
+              value: "N/A",
               isPositive: true,
             },
           });
         } else {
           // Set fallback active addresses
           setActiveAddresses({
-            value: "125.4K",
+            value: "N/A",
             change: {
-              value: "3.7%",
+              value: "N/A",
               isPositive: true,
             },
           });
@@ -391,9 +391,9 @@ const OverviewSection = ({ refreshTrigger = 0 }: OverviewSectionProps) => {
         console.error("Error fetching active addresses:", error);
         // Set fallback active addresses
         setActiveAddresses({
-          value: "125.4K",
+          value: "N/A",
           change: {
-            value: "3.7%",
+            value: "N/A",
             isPositive: true,
           },
         });

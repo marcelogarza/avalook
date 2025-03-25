@@ -79,74 +79,10 @@ const ChartsSection = ({
 
   // Generate mock data for fallback
   const generateMockData = (range: string) => {
-    const now = new Date();
-    let days: number;
-
-    switch (range) {
-      case "24h":
-        days = 24; // Use hours for 24h view
-        break;
-      case "7d":
-        days = 7;
-        break;
-      case "30d":
-        days = 30;
-        break;
-      case "90d":
-        days = 90;
-        break;
-      case "1y":
-        days = 365;
-        break;
-      default:
-        days = 7;
-    }
-
-    // For 24h view, generate hourly data points
-    const interval = range === "24h" ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
-    const pointCount = range === "24h" ? 24 : days;
-
-    // Transaction volume mock data
-    const mockTransactionData = Array(pointCount)
-      .fill(null)
-      .map((_, i) => {
-        const date = new Date(now.getTime() - (pointCount - 1 - i) * interval);
-        return {
-          timestamp: date.toISOString(),
-          value: 300000 + Math.floor(Math.random() * 100000),
-          date: formatDate(date.toISOString(), range),
-        };
-      });
-
-    // Gas fees mock data
-    const mockGasData = Array(pointCount)
-      .fill(null)
-      .map((_, i) => {
-        const date = new Date(now.getTime() - (pointCount - 1 - i) * interval);
-        return {
-          timestamp: date.toISOString(),
-          average: 0.03 + Math.random() * 0.05,
-          max: 0.1 + Math.random() * 0.1,
-          date: formatDate(date.toISOString(), range),
-        };
-      });
-
-    // Active addresses mock data
-    const mockAddressData = Array(pointCount)
-      .fill(null)
-      .map((_, i) => {
-        const date = new Date(now.getTime() - (pointCount - 1 - i) * interval);
-        return {
-          timestamp: date.toISOString(),
-          active: 45000 + Math.floor(Math.random() * 15000),
-          date: formatDate(date.toISOString(), range),
-        };
-      });
-
     return {
-      transactions: mockTransactionData,
-      gas: mockGasData,
-      addresses: mockAddressData,
+      transactions: [],
+      gas: [],
+      addresses: [],
     };
   };
 
@@ -294,32 +230,29 @@ const ChartsSection = ({
         fetchActiveAddressesData(),
       ]);
 
-      // If any data fetch failed, use mock data for those datasets
+      // If any data fetch failed, set empty arrays
       if (!txSuccess || !gasSuccess || !addrSuccess) {
-        const mockData = generateMockData(timeRange);
-
         if (!txSuccess) {
-          console.log("Using mock transaction data");
-          setTransactionVolumeData(mockData.transactions);
+          console.log("No transaction data available");
+          setTransactionVolumeData([]);
         }
 
         if (!gasSuccess) {
-          console.log("Using mock gas fee data");
-          setGasFeeData(mockData.gas);
+          console.log("No gas fee data available");
+          setGasFeeData([]);
         }
 
         if (!addrSuccess) {
-          console.log("Using mock address data");
-          setActiveAddressesData(mockData.addresses);
+          console.log("No address data available");
+          setActiveAddressesData([]);
         }
       }
     } catch (err) {
       console.error("Failed to fetch chart data:", err);
-      // If all data fetching failed, use mock data
-      const mockData = generateMockData(timeRange);
-      setTransactionVolumeData(mockData.transactions);
-      setGasFeeData(mockData.gas);
-      setActiveAddressesData(mockData.addresses);
+      // If all data fetching failed, set empty arrays
+      setTransactionVolumeData([]);
+      setGasFeeData([]);
+      setActiveAddressesData([]);
     } finally {
       setIsLoading(false);
     }
@@ -358,107 +291,125 @@ const ChartsSection = ({
             </TabsList>
 
             <TabsContent value="transactions" className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={transactionVolumeData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="date" stroke="currentColor" />
-                  <YAxis stroke="currentColor" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--b1, oklch(var(--b1)/1))",
-                      color: "var(--bc, oklch(var(--bc)/1))",
-                      border: "1px solid var(--b3, oklch(var(--b3)/1))",
-                    }}
-                    formatter={(value) => [
-                      Number(value).toLocaleString(),
-                      "Transactions",
-                    ]}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#8884d8"
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    name="Transaction Volume"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {transactionVolumeData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={transactionVolumeData}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="date" stroke="currentColor" />
+                    <YAxis stroke="currentColor" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "var(--b1, oklch(var(--b1)/1))",
+                        color: "var(--bc, oklch(var(--bc)/1))",
+                        border: "1px solid var(--b3, oklch(var(--b3)/1))",
+                      }}
+                      formatter={(value) => [
+                        Number(value).toLocaleString(),
+                        "Transactions",
+                      ]}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#8884d8"
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      name="Transaction Volume"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex justify-center items-center h-full">
+                  <p className="text-base-content/70">No chart data available</p>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="gas" className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={gasFeeData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="date" stroke="currentColor" />
-                  <YAxis stroke="currentColor" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--b1, oklch(var(--b1)/1))",
-                      color: "var(--bc, oklch(var(--bc)/1))",
-                      border: "1px solid var(--b3, oklch(var(--b3)/1))",
-                    }}
-                    formatter={(value) => [`${value} AVAX`, ""]}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="average"
-                    stroke="#82ca9d"
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    name="Average Gas Fee"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="max"
-                    stroke="#ff7300"
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    name="Max Gas Fee"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {gasFeeData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={gasFeeData}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="date" stroke="currentColor" />
+                    <YAxis stroke="currentColor" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "var(--b1, oklch(var(--b1)/1))",
+                        color: "var(--bc, oklch(var(--bc)/1))",
+                        border: "1px solid var(--b3, oklch(var(--b3)/1))",
+                      }}
+                      formatter={(value) => [`${value} AVAX`, ""]}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="average"
+                      stroke="#82ca9d"
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      name="Average Gas Fee"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="max"
+                      stroke="#ff7300"
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      name="Max Gas Fee"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex justify-center items-center h-full">
+                  <p className="text-base-content/70">No chart data available</p>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="addresses" className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={activeAddressesData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="date" stroke="currentColor" />
-                  <YAxis stroke="currentColor" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--b1, oklch(var(--b1)/1))",
-                      color: "var(--bc, oklch(var(--bc)/1))",
-                      border: "1px solid var(--b3, oklch(var(--b3)/1))",
-                    }}
-                    formatter={(value) => [
-                      Number(value).toLocaleString(),
-                      "Addresses",
-                    ]}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="active"
-                    stroke="#8884d8"
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    name="Active Addresses"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {activeAddressesData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={activeAddressesData}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis dataKey="date" stroke="currentColor" />
+                    <YAxis stroke="currentColor" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "var(--b1, oklch(var(--b1)/1))",
+                        color: "var(--bc, oklch(var(--bc)/1))",
+                        border: "1px solid var(--b3, oklch(var(--b3)/1))",
+                      }}
+                      formatter={(value) => [
+                        Number(value).toLocaleString(),
+                        "Addresses",
+                      ]}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="active"
+                      stroke="#8884d8"
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      name="Active Addresses"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex justify-center items-center h-full">
+                  <p className="text-base-content/70">No chart data available</p>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         )}

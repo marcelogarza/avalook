@@ -124,13 +124,13 @@ const NewsFeedSection = ({ news: propNews }: NewsFeedSectionProps) => {
           setNews(transformedNews);
         } else {
           // Fallback to default news if API response is invalid
-          setNews(defaultNews);
+          setNews([]);
         }
       } catch (err) {
         console.error("Error fetching news:", err);
         setError("Failed to load news");
         // Fallback to default data
-        setNews(defaultNews);
+        setNews([]);
       } finally {
         setIsLoading(false);
       }
@@ -256,109 +256,6 @@ const NewsCard = ({ item }: NewsCardProps) => {
   );
 };
 
-const defaultNews: NewsItem[] = [
-  {
-    id: "1",
-    title:
-      "Avalanche Subnet Toolkit Launches to Accelerate Blockchain Development",
-    source: "Avalanche Blog",
-    date: "2h ago",
-    category: "Protocol",
-    summary:
-      "Ava Labs releases new developer toolkit to simplify subnet deployment and management, enabling faster blockchain application development on Avalanche.",
-    url: "#",
-  },
-  {
-    id: "2",
-    title: "Major DeFi Protocol Migrates from Ethereum to Avalanche",
-    source: "DeFi Pulse",
-    date: "5h ago",
-    category: "DeFi",
-    summary:
-      "Leading DeFi lending platform announces full migration to Avalanche citing lower fees and faster transaction times as primary motivators.",
-    url: "#",
-  },
-  {
-    id: "3",
-    title: "Avalanche Foundation Announces $100M Ecosystem Fund",
-    source: "CoinDesk",
-    date: "1d ago",
-    category: "Protocol",
-    summary:
-      "New ecosystem fund aims to support projects building on Avalanche with grants, technical support, and marketing resources.",
-    url: "#",
-  },
-  {
-    id: "4",
-    title: "NFT Marketplace Sets New Volume Record on Avalanche",
-    source: "NFT Insider",
-    date: "2d ago",
-    category: "NFT",
-    summary:
-      "Leading Avalanche NFT marketplace reports record-breaking 24-hour trading volume of $25M, signaling growing interest in the ecosystem.",
-    url: "#",
-  },
-  {
-    id: "5",
-    title: "Avalanche Governance Proposal AIP-44 Passes with 92% Approval",
-    source: "Avalanche Forum",
-    date: "3d ago",
-    category: "Governance",
-    summary:
-      "Community approves proposal to enhance validator rewards structure, aiming to increase network security and decentralization.",
-    url: "#",
-  },
-  {
-    id: "6",
-    title: "Avalanche's Core Protocol Achieves New Performance Milestone",
-    source: "Crypto News",
-    date: "4d ago",
-    category: "Protocol",
-    summary:
-      "Ava Labs researchers demonstrate Avalanche consensus reaching 10,000 TPS in controlled environment tests, setting new standard for blockchain performance.",
-    url: "#",
-  },
-  {
-    id: "7",
-    title: "JPMorgan Partners with Avalanche for Asset Tokenization",
-    source: "Financial Times",
-    date: "6d ago",
-    category: "DeFi",
-    summary:
-      "Global banking leader JPMorgan announces integration of its Onyx platform with Avalanche to enable institutional-grade asset tokenization services.",
-    url: "#",
-  },
-  {
-    id: "8",
-    title:
-      "Avalanche Virtual Machine 2.0 Promises Major Developer Improvements",
-    source: "Decrypt",
-    date: "1w ago",
-    category: "Protocol",
-    summary:
-      "The next generation Avalanche VM brings reduced gas fees, enhanced smart contract capabilities, and better compatibility with existing development tools.",
-    url: "#",
-  },
-  {
-    id: "9",
-    title: "Top DeFi Protocol on Avalanche Surpasses $2B in TVL",
-    source: "DeFi Pulse",
-    date: "1w ago",
-    category: "DeFi",
-    summary:
-      "Major decentralized finance platform built on Avalanche celebrates milestone as total value locked exceeds $2 billion, signaling growing ecosystem strength.",
-    url: "#",
-  },
-  {
-    id: "10",
-    title: "Avalanche Foundation Expands Developer Grants to $25M",
-    source: "Avalanche Forum",
-    date: "2w ago",
-    category: "Governance",
-    summary:
-      "The Avalanche Foundation increases its developer grants program to $25 million to support innovative teams building on the Avalanche ecosystem.",
-    url: "#",
-  },
-];
+const defaultNews: NewsItem[] = [];
 
 export default NewsFeedSection;

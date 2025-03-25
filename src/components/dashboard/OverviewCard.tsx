@@ -45,7 +45,7 @@ const OverviewCard = ({
         ) : (
           <>
             <div className="text-2xl font-bold">{value}</div>
-            {change && change.value && !change.value.includes("NaN") && (
+            {change && change.value && change.value !== "N/A" && !change.value.includes("NaN") && (
               <p className="text-xs text-muted-foreground">
                 <span
                   className={
@@ -58,6 +58,14 @@ const OverviewCard = ({
                 {description || "from last period"}
               </p>
             )}
+            {(change && change.value === "N/A" && (
+              <p className="text-xs text-muted-foreground">
+                <span className="text-base-content/70">
+                  {change.value}
+                </span>{" "}
+                {description || "from last period"}
+              </p>
+            ))}
             {!change && description && (
               <p className="text-xs text-muted-foreground">{description}</p>
             )}

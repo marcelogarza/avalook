@@ -56,9 +56,9 @@ const TokenPriceSection = ({
       // Construct metrics from the available endpoints
       const metrics: NetworkMetrics = {
         tps: tps,
-        validators: 1204, // Default validator count for now
+        validators: "N/A", // Default validator count for now
         totalTransactions: txCount,
-        avgBlockTime: 2.0, // Default for Avalanche
+        avgBlockTime: "N/A", // Default for Avalanche
       };
 
       setNetworkMetrics(metrics);
@@ -66,10 +66,10 @@ const TokenPriceSection = ({
       console.error("Error fetching network metrics:", error);
       // Non-critical, so we'll set some default metrics
       setNetworkMetrics({
-        tps: 4.2,
-        validators: 1204,
-        totalTransactions: 1200000,
-        avgBlockTime: 2.0,
+        tps: "N/A",
+        validators: "N/A",
+        totalTransactions: "N/A",
+        avgBlockTime: "N/A",
       });
     }
   };
@@ -181,15 +181,7 @@ const TokenPriceSection = ({
             volume24h: `$${(
               (tokenResponse.data["avalanche-2"]?.usd_24h_vol || 0) / 1e6
             ).toFixed(0)}M`,
-            chart: tokenHistories["avalanche-2"] || [
-              22,
-              19,
-              21,
-              24,
-              20,
-              25,
-              tokenResponse.data["avalanche-2"]?.usd || 27.5,
-            ],
+            chart: tokenHistories["avalanche-2"] || [],
             // Add data from dapps endpoint if available
             url:
               dappsMap["avalanche"]?.url ||
@@ -212,9 +204,7 @@ const TokenPriceSection = ({
             volume24h: `$${(
               (tokenResponse.data.joe?.usd_24h_vol || 0) / 1e6
             ).toFixed(1)}M`,
-            chart: tokenHistories.joe || [
-              0.5, 0.48, 0.52, 0.51, 0.53, 0.55, 0.54,
-            ],
+            chart: tokenHistories.joe || [],
             // Add data from dapps endpoint if available
             url:
               dappsMap["trader joe"]?.url ||
@@ -246,9 +236,7 @@ const TokenPriceSection = ({
             volume24h: `$${(
               (tokenResponse.data.pangolin?.usd_24h_vol || 0) / 1e6
             ).toFixed(1)}M`,
-            chart: tokenHistories.pangolin || [
-              0.1, 0.09, 0.11, 0.105, 0.12, 0.115, 0.11,
-            ],
+            chart: tokenHistories.pangolin || [],
             // Add data from dapps endpoint if available
             url:
               dappsMap["pangolin"]?.url ||
@@ -271,9 +259,7 @@ const TokenPriceSection = ({
             volume24h: `$${(
               (tokenResponse.data.benqi?.usd_24h_vol || 0) / 1e6
             ).toFixed(1)}M`,
-            chart: tokenHistories.benqi || [
-              0.02, 0.019, 0.022, 0.021, 0.023, 0.022, 0.021,
-            ],
+            chart: tokenHistories.benqi || [],
             // Add data from dapps endpoint if available
             url:
               dappsMap["benqi"]?.url ||
@@ -303,12 +289,12 @@ const TokenPriceSection = ({
               marketCap: dapp.market_cap,
               volume24h: "N/A", // Volume data might not be available
               chart: [
-                dapp.price_usd,
-                dapp.price_usd * 0.98,
-                dapp.price_usd * 1.01,
-                dapp.price_usd * 0.99,
-                dapp.price_usd,
-              ], // Generate placeholder chart
+                dapp.price_usd || 0,
+                dapp.price_usd || 0,
+                dapp.price_usd || 0,
+                dapp.price_usd || 0,
+                dapp.price_usd || 0,
+              ], // Flat line instead of random values
               url: dapp.url,
               image: dapp.image,
               description: dapp.description,
@@ -450,19 +436,23 @@ const TokenPriceSection = ({
                 <div className="h-10 flex items-center">
                   {/* Simple sparkline chart */}
                   <div className="flex items-end h-8 space-x-1">
-                    {token.chart.map((value, i) => {
-                      const max = Math.max(...token.chart.filter((v) => v > 0));
-                      const height = max > 0 ? `${(value / max) * 100}%` : "0%";
-                      return (
-                        <div
-                          key={i}
-                          className={`w-1 ${
-                            token.change24h >= 0 ? "bg-success" : "bg-error"
-                          } rounded-t-sm`}
-                          style={{ height }}
-                        />
-                      );
-                    })}
+                    {token.chart && token.chart.length > 0 ? (
+                      token.chart.map((value, i) => {
+                        const max = Math.max(...token.chart.filter((v) => v > 0));
+                        const height = max > 0 ? `${(value / max) * 100}%` : "0%";
+                        return (
+                          <div
+                            key={i}
+                            className={`w-1 ${
+                              token.change24h >= 0 ? "bg-success" : "bg-error"
+                            } rounded-t-sm`}
+                            style={{ height }}
+                          />
+                        );
+                      })
+                    ) : (
+                      <div className="text-xs text-base-content/60">No chart data available</div>
+                    )}
                   </div>
                 </div>
               </div>

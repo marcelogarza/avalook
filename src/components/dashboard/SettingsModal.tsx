@@ -28,6 +28,10 @@ interface SettingsModalProps {
 const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
   const [activeTab, setActiveTab] = useState("appearance");
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
+  const [personalizedContent, setPersonalizedContent] = useState(false);
+  const [rememberWallets, setRememberWallets] = useState(false);
+  const [dataRegion, setDataRegion] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     // Check if current theme is dark
@@ -102,21 +106,36 @@ const SettingsModal = ({ open = true, onOpenChange }: SettingsModalProps) => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span>Anonymous Usage Analytics</span>
-                    <Switch id="analytics" defaultChecked />
+                    <Switch 
+                      id="analytics" 
+                      checked={analyticsEnabled}
+                      onCheckedChange={setAnalyticsEnabled}
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Personalized Content</span>
-                    <Switch id="personalization" defaultChecked />
+                    <Switch 
+                      id="personalization" 
+                      checked={personalizedContent}
+                      onCheckedChange={setPersonalizedContent}
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Remember Connected Wallets</span>
-                    <Switch id="remember-wallets" defaultChecked />
+                    <Switch 
+                      id="remember-wallets" 
+                      checked={rememberWallets}
+                      onCheckedChange={setRememberWallets}
+                    />
                   </div>
                 </div>
 
                 <div className="pt-4">
                   <h3 className="text-lg font-medium mb-2">Data Region</h3>
-                  <Select defaultValue="global">
+                  <Select 
+                    value={dataRegion} 
+                    onValueChange={setDataRegion}
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select data region" />
                     </SelectTrigger>
