@@ -46,7 +46,7 @@ const HelpContactModal = ({ open, onOpenChange }: HelpContactModalProps) => {
       setEmail("");
       setSubject("");
       setMessage("");
-      setSub(false);
+      setSubmitSuccess(false);
     }
   }, [open]);
 
